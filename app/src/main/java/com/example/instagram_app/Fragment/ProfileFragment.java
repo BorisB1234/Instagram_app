@@ -1,6 +1,7 @@
 package com.example.instagram_app.Fragment;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
@@ -21,6 +22,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.example.instagram_app.Adapter.MyFotoAdapter;
+import com.example.instagram_app.EditProfileActivity;
 import com.example.instagram_app.Model.Post;
 import com.example.instagram_app.Model.User;
 import com.example.instagram_app.R;
@@ -121,7 +123,7 @@ public class ProfileFragment extends Fragment {
             public void onClick(View v) {
                 String btn = edit_profile.getText().toString();
                 if (btn.equals("Edit Profile")) {
-                    //go to the EditProfile
+                    startActivity(new Intent(getContext(), EditProfileActivity.class));
                 } else if (btn.equals("follow")) {
                     FirebaseDatabase.getInstance().getReference().child("Follow").child(firebaseUser.getUid())
                             .child("following").child(profileid).setValue(true);
