@@ -121,8 +121,8 @@ public class EditProfileActivity extends AppCompatActivity {
     }
 
     private void updateProfile(String fullname, String username, String bio){
-
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("Users").child(firebaseUser.getUid());
+        //
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users").child(firebaseUser.getUid());
 
         HashMap<String, Object> map = new HashMap<>();
         map.put("fullname", fullname);
@@ -130,7 +130,7 @@ public class EditProfileActivity extends AppCompatActivity {
         map.put("bio", bio);
 
         reference.updateChildren(map);
-
+        //
         Toast.makeText(EditProfileActivity.this, "Successfully updated!", Toast.LENGTH_SHORT).show();
     }
 
@@ -149,9 +149,9 @@ public class EditProfileActivity extends AppCompatActivity {
                     + "." + getFileExtension(mImageUri));
 
             uploadTask = fileReference.putFile(mImageUri);
-            uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+            uploadTask.continueWithTask(new Continuation() {
                 @Override
-                public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                public Task<Uri> then(@NonNull Task task) throws Exception {
                     if (!task.isSuccessful()) {
                         throw task.getException();
                     }
