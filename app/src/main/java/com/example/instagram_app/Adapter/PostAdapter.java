@@ -202,19 +202,20 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
                                 editPost(post.getPostid());
                                 return true;
                             case R.id.delete:
+                                final String id = post.getPostid();
                                 FirebaseDatabase.getInstance().getReference("Posts")
                                         .child(post.getPostid()).removeValue()
                                         .addOnCompleteListener(new OnCompleteListener<Void>() {
                                             @Override
                                             public void onComplete(@NonNull Task<Void> task) {
-                                                if(task.isSuccessful()){
-                                                    Toast.makeText(mContext, "Deleted", Toast.LENGTH_SHORT).show();
+                                                if (task.isSuccessful()){
+                                                    deleteNotifications(id, firebaseUser.getUid());
                                                 }
                                             }
                                         });
                                 return true;
                             case R.id.report:
-                                Toast.makeText(mContext, "Report clicked!", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(mContext, "Reported clicked!", Toast.LENGTH_SHORT).show();
                                 return true;
                             default:
                                 return false;
@@ -222,10 +223,9 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
                     }
                 });
                 popupMenu.inflate(R.menu.post_menu);
-                if(!post.getPublisher().equals(firebaseUser.getUid())){
+                if (!post.getPublisher().equals(firebaseUser.getUid())){
                     popupMenu.getMenu().findItem(R.id.edit).setVisible(false);
                     popupMenu.getMenu().findItem(R.id.delete).setVisible(false);
-
                 }
                 popupMenu.show();
             }
@@ -313,7 +313,30 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
 
         reference.push().setValue(hashMap);
     }
+    private void deleteNotifications(final String postid, String userid){
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Notifications").child(userid);
+        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+                    if (snapshot.child("postid").getValue().equals(postid)){
+                        snapshot.getRef().removeValue()
+                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        Toast.makeText(mContext, "Deleted!", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                    }
+                }
+            }
 
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
     private void nrLikes(final TextView likes, String postId){
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("Likes").child(postId);
         reference.addValueEventListener(new ValueEventListener() {

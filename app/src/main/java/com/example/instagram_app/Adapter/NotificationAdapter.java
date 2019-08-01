@@ -129,7 +129,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     }
     private void getPostImage(final ImageView imageView, String postid){
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Posts").child(postid);
-        reference.addValueEventListener(new ValueEventListener() {
+        reference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 Post post = dataSnapshot.getValue(Post.class);
