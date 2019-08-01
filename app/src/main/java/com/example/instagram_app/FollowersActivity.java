@@ -26,7 +26,7 @@ public class FollowersActivity extends AppCompatActivity {
     String id;
     String title;
 
-    List<String> idlist;
+    private List<String> idlist;
 
     RecyclerView recyclerView;
     UserAdapter userAdapter;
@@ -147,10 +147,12 @@ public class FollowersActivity extends AppCompatActivity {
                 for(DataSnapshot snapshot: dataSnapshot.getChildren())
                 {
                     User user=snapshot.getValue(User.class);
-                    if(user.getId().equals(id))
-                    {
-                        userList.add(user);
+                    for (String id : idlist) {
+                        if (user.getId().equals(id)) {
+                            userList.add(user);
+                        }
                     }
+
                 }
                 userAdapter.notifyDataSetChanged();
             }
