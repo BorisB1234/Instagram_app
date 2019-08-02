@@ -3,16 +3,21 @@ package com.example.instagram_app;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.webkit.MimeTypeMap;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,6 +33,12 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
 import com.theartofdev.edmodo.cropper.CropImage;
 
+import android.location.Location;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+
 import java.util.HashMap;
 
 public class PostActivity extends AppCompatActivity {
@@ -40,19 +51,39 @@ public class PostActivity extends AppCompatActivity {
     ImageView close, image_added;
     TextView post;
     EditText description;
+    Switch gpsBtn;
+    String gpsLatitude="";
+    String gpsLongitude="";
+    FusedLocationProviderClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
         setContentView(R.layout.activity_post);
 
         close=findViewById(R.id.close);
         image_added=findViewById(R.id.image_added);
         post=findViewById(R.id.post);
         description=findViewById(R.id.description);
-
+        gpsBtn=findViewById(R.id.save_gps);
         storageReference= FirebaseStorage.getInstance().getReference("posts");
 
+
+
+        gpsBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(gpsBtn.isChecked())
+                    getGpsLocation();
+                else {
+                    gpsLatitude="";
+                    gpsLongitude="";
+                }
+            }
+
+        });
         close.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -71,6 +102,7 @@ public class PostActivity extends AppCompatActivity {
         CropImage.activity()
                 .setAspectRatio(1,1)
                 .start(PostActivity.this);
+
     }
 
     private String getFileExtension(Uri uri){
@@ -113,7 +145,8 @@ public class PostActivity extends AppCompatActivity {
                         hashMap.put("postimage",myUrl);
                         hashMap.put("description",description.getText().toString());
                         hashMap.put("publisher", FirebaseAuth.getInstance().getCurrentUser().getUid());
-
+                        hashMap.put("gpsLatitude",gpsLatitude);
+                        hashMap.put("gpsLongitude",gpsLongitude);
                         reference.child(postid).setValue(hashMap);
 
                         progressDialog.dismiss();
@@ -135,6 +168,27 @@ public class PostActivity extends AppCompatActivity {
         }
     }
 
+    private void getGpsLocation() {
+        requestPermission();
+        client = LocationServices.getFusedLocationProviderClient(PostActivity.this);
+        if (ActivityCompat.checkSelfPermission(PostActivity.this, ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        client.getLastLocation().addOnSuccessListener(PostActivity.this, new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                if(location != null){
+                    gpsLatitude=String.valueOf(location.getLatitude());
+                    gpsLongitude=String.valueOf(location.getLongitude());
+                }
+            }
+        });
+    }
+    private void requestPermission(){
+        ActivityCompat.requestPermissions(this,new String[]{ACCESS_FINE_LOCATION},1);
+    }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -151,5 +205,6 @@ public class PostActivity extends AppCompatActivity {
             finish();
         }
     }
+
 
 }

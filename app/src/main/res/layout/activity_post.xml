@@ -68,4 +68,16 @@
             android:maxLines="5"
             android:id="@+id/description"/>
     </LinearLayout>
+
+    <Switch
+        android:id="@+id/save_gps"
+        android:layout_width="274dp"
+        android:layout_height="49dp"
+        android:layout_centerHorizontal="true"
+        android:gravity="center"
+        android:text="Save gps location "
+        android:textAlignment="center"
+        android:textColorLink="#00F10101"
+        android:textSize="24sp"
+        android:theme="@style/SCBSwitch"/>
 </LinearLayout>

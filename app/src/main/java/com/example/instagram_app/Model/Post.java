@@ -7,12 +7,16 @@ public class Post {
     private String postimage;
     private String description;
     private String publisher;
+    private String gpsLatitude;
+    private String gpsLongitude;
 
-    public Post(@NonNull String postid,@NonNull String postimage, @NonNull String description,@NonNull String publisher) {
+    public Post(@NonNull String postid,@NonNull String postimage, @NonNull String description,@NonNull String publisher,@NonNull String gpsLatitude,@NonNull String gpsLongitude) {
         this.postid = postid;
         this.postimage = postimage;
         this.description = description+"";
         this.publisher = publisher;
+        this.gpsLatitude = gpsLatitude;
+        this.gpsLongitude = gpsLongitude;
     }
 
     public Post(){
@@ -49,5 +53,21 @@ public class Post {
 
     public void setPublisher(String publisher) {
         this.publisher = publisher;
+    }
+
+    public String getGpsLatitude() {
+        return gpsLatitude;
+    }
+
+    public void setGpsLatitude(String gpsLatitude) {
+        this.gpsLatitude = gpsLatitude;
+    }
+
+    public String getGpsLongitude() {
+        return gpsLongitude;
+    }
+
+    public void setGpsLongitude(String gpsLongitude) {
+        this.gpsLongitude = gpsLongitude;
     }
 }
