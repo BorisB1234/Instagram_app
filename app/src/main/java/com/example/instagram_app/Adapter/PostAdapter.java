@@ -18,17 +18,23 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.instagram_app.CommentsActivity;
 import com.example.instagram_app.FollowersActivity;
+import com.example.instagram_app.Fragment.HomeFragment;
 import com.example.instagram_app.Fragment.PostDetailFragment;
 import com.example.instagram_app.Fragment.ProfileFragment;
+import com.example.instagram_app.MainActivity;
 import com.example.instagram_app.Model.Post;
 import com.example.instagram_app.Model.User;
+import com.example.instagram_app.OptionsActivity;
+import com.example.instagram_app.PostActivity;
 import com.example.instagram_app.R;
+import com.example.instagram_app.StartActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -41,6 +47,8 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.HashMap;
 import java.util.List;
+
+import static androidx.core.content.ContextCompat.startActivity;
 
 public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
 
@@ -314,6 +322,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
         reference.push().setValue(hashMap);
     }
     private void deleteNotifications(final String postid, String userid){
+        Toast.makeText(mContext, "lalala!", Toast.LENGTH_SHORT).show();
+
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Notifications").child(userid);
         reference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override

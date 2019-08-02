@@ -19,6 +19,7 @@ import com.example.instagram_app.Adapter.PostAdapter;
 import com.example.instagram_app.Model.Post;
 import com.example.instagram_app.R;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -86,6 +87,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void readPosts(){
+        final FirebaseUser firebaseUser= FirebaseAuth.getInstance().getCurrentUser();;
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Posts");
 
         reference.addValueEventListener(new ValueEventListener() {
@@ -94,6 +96,11 @@ public class HomeFragment extends Fragment {
                 postLists.clear();
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()){
                     Post post=snapshot.getValue(Post.class);
+                    if(post.getPublisher().equals(firebaseUser.getUid()))
+                    {
+                        postLists.add(post);
+
+                    }
                     for(String id:followingList){
                         if(post.getPublisher().equals(id)){
                             postLists.add(post);

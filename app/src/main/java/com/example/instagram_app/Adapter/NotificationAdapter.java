@@ -104,10 +104,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             text = itemView.findViewById(R.id.comment);
 
         }
-
-
     }
-
 
     private void getUserInfo(final ImageView imageView, final TextView username, String publisherid){
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference()
