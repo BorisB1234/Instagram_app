@@ -2,6 +2,7 @@ package com.example.instagram_app;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
 import android.content.Intent;
@@ -16,6 +17,8 @@ import com.example.instagram_app.Fragment.SearchFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+
 public class MainActivity extends AppCompatActivity {
 
     BottomNavigationView bottomNavigationView;
@@ -25,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ActivityCompat.requestPermissions(this,new String[]{ACCESS_FINE_LOCATION},1);
 
         bottomNavigationView = findViewById(R.id.bottom_navigation);
 
