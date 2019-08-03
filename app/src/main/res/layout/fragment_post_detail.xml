@@ -29,6 +29,15 @@
                     android:text="Photo"
                     android:textColor="@color/colorPrimaryDark"/>
 
+                <Button
+                    android:id="@+id/mapLocation"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/post_image"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginEnd="5dp"
+                    android:text="Show location"
+                    android:visibility="gone"/>
             </RelativeLayout>
 
         </androidx.appcompat.widget.Toolbar>
@@ -43,5 +52,7 @@
         android:id="@+id/recycler_view">
 
     </androidx.recyclerview.widget.RecyclerView>
+
+
 
 </RelativeLayout>

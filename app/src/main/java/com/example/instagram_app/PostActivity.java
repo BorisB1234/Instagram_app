@@ -52,14 +52,13 @@ public class PostActivity extends AppCompatActivity {
     TextView post;
     EditText description;
     Switch gpsBtn;
-    String gpsLatitude="";
-    String gpsLongitude="";
+    String gpsLatitude="0";
+    String gpsLongitude="0";
     FusedLocationProviderClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
 
         setContentView(R.layout.activity_post);
 
@@ -78,8 +77,8 @@ public class PostActivity extends AppCompatActivity {
                 if(gpsBtn.isChecked())
                     getGpsLocation();
                 else {
-                    gpsLatitude="";
-                    gpsLongitude="";
+                    gpsLatitude="0";
+                    gpsLongitude="0";
                 }
             }
 
@@ -189,6 +188,9 @@ public class PostActivity extends AppCompatActivity {
         ActivityCompat.requestPermissions(this,new String[]{ACCESS_FINE_LOCATION},1);
     }
 
+    //public void closeAfterDelete(){
+    //    finish();
+    //}
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {

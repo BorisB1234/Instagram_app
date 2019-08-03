@@ -1,28 +1,48 @@
 package com.example.instagram_app;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
+import com.bumptech.glide.Glide;
+import com.example.instagram_app.Model.Post;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+    private String gpsLongitude="0";
+    private String gpsLatitude="0";
+    private double gpsLongitudenum=0;
+    private double gpsLatitudenum=0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+
+
     }
 
 
@@ -37,10 +57,35 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
+
+        Intent intent=getIntent();
+
+        gpsLongitude=intent.getStringExtra("gpsLongitude");
+        gpsLatitude=intent.getStringExtra("gpsLatitude");
+        Log.v("TAG22", String.valueOf(gpsLongitude));
+        Log.v("TAG22", String.valueOf(gpsLatitude));
+
+
+        try {
+            gpsLongitudenum = Double.parseDouble(gpsLongitude);
+        } catch(NumberFormatException nfe) {
+            System.out.println("Could not parse " + nfe);
+        }
+
+        try {
+            gpsLatitudenum = Double.parseDouble(gpsLatitude);
+        } catch(NumberFormatException nfe) {
+            System.out.println("Could not parse " + nfe);
+        }
+
+        Log.v("TAG22", String.valueOf(gpsLongitudenum));
+        Log.v("TAG22", String.valueOf(gpsLatitudenum));
+
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
+        LatLng sydney = new LatLng(gpsLatitudenum, gpsLongitudenum);
+
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
     }

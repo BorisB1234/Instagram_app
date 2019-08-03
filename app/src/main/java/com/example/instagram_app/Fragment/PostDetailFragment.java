@@ -1,6 +1,7 @@
 package com.example.instagram_app.Fragment;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
@@ -10,12 +11,16 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import com.example.instagram_app.Adapter.PostAdapter;
+import com.example.instagram_app.MapsActivity;
 import com.example.instagram_app.Model.Post;
+import com.example.instagram_app.PostActivity;
 import com.example.instagram_app.R;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -33,7 +38,10 @@ public class PostDetailFragment extends Fragment {
     private RecyclerView recyclerView;
     private PostAdapter postAdapter;
     private List<Post> postList;
+    private String gpsLatitude="0";
+    private String gpsLongitude="0";
 
+    Button mapLocBtn;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -50,7 +58,44 @@ public class PostDetailFragment extends Fragment {
         postList = new ArrayList<>();
         postAdapter=new PostAdapter(getContext(),postList);
         recyclerView.setAdapter(postAdapter);
+        mapLocBtn=view.findViewById(R.id.mapLocation);
 
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Posts").child(postid);
+
+        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Post post = dataSnapshot.getValue(Post.class);
+                gpsLatitude=post.getGpsLatitude();
+                gpsLongitude=post.getGpsLongitude();
+                Log.v("TAG4",gpsLongitude);
+                Log.v("TAG4",gpsLatitude);
+
+                if((gpsLongitude.equals("0")&&gpsLatitude.equals("0")||gpsLongitude.equals("")||gpsLatitude.equals("")))
+                {
+                    mapLocBtn.setVisibility(View.GONE);
+                }
+                else{
+                    mapLocBtn.setVisibility(View.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+;
+        mapLocBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), MapsActivity.class);
+                intent.putExtra("gpsLongitude",gpsLongitude);
+                intent.putExtra("gpsLatitude",gpsLatitude);
+
+                startActivity(intent);
+            }
+        });
         readPost();
 
         return view;

@@ -1,5 +1,6 @@
 package com.example.instagram_app.Adapter;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -47,9 +48,8 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.HashMap;
 import java.util.List;
-
 import static androidx.core.content.ContextCompat.startActivity;
-
+import com.example.instagram_app.PostActivity;
 public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
 
     public Context mContext;
@@ -211,12 +211,19 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
                                 return true;
                             case R.id.delete:
                                 final String id = post.getPostid();
+                                //((PostActivity) mContext).closeAfterDelete();
+                                //Intent intent = new Intent(mContext, MainActivity.class);
+                                //mContext.startActivity(intent);
+
+                                //((Activity)mContext).finish();
+
                                 FirebaseDatabase.getInstance().getReference("Posts")
                                         .child(post.getPostid()).removeValue()
                                         .addOnCompleteListener(new OnCompleteListener<Void>() {
                                             @Override
                                             public void onComplete(@NonNull Task<Void> task) {
                                                 if (task.isSuccessful()){
+
                                                     deleteNotifications(id, firebaseUser.getUid());
                                                 }
                                             }
@@ -322,8 +329,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
         reference.push().setValue(hashMap);
     }
     private void deleteNotifications(final String postid, String userid){
-        Toast.makeText(mContext, "lalala!", Toast.LENGTH_SHORT).show();
-
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Notifications").child(userid);
         reference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
