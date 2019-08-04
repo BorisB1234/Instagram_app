@@ -85,7 +85,7 @@ public class PostDetailFragment extends Fragment {
 
             }
         });
-;
+
         mapLocBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -104,13 +104,16 @@ public class PostDetailFragment extends Fragment {
     private void readPost() {
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Posts").child(postid);
 
-        reference.addValueEventListener(new ValueEventListener() {
+        reference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                System.out.println("zzzzzzzzzzzzzzzzzzzzzzzzzzzzz");
                 postList.clear();
                 Post post = dataSnapshot.getValue(Post.class);
-                postList.add(post);
-
+                System.out.println(post);
+                if (post!=null)
+                    postList.add(post);
+                System.out.println(postList);
                 postAdapter.notifyDataSetChanged();
             }
 

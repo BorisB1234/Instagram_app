@@ -30,6 +30,7 @@ import com.example.instagram_app.Fragment.HomeFragment;
 import com.example.instagram_app.Fragment.PostDetailFragment;
 import com.example.instagram_app.Fragment.ProfileFragment;
 import com.example.instagram_app.MainActivity;
+import com.example.instagram_app.Model.Notification;
 import com.example.instagram_app.Model.Post;
 import com.example.instagram_app.Model.User;
 import com.example.instagram_app.OptionsActivity;
@@ -74,6 +75,10 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         final Post post = mPost.get(i);
+//        if (post==null) return;
+        System.out.println("vvv\t"+i+"\t"+post+"\t"+mPost.size()+"\t"+mPost);
+
+
 
         Glide.with(mContext).load(post.getPostimage())
                 .apply(new RequestOptions().placeholder(R.drawable.placeholder))
@@ -216,6 +221,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
                                 //mContext.startActivity(intent);
 
                                 //((Activity)mContext).finish();
+                                ((FragmentActivity)mContext).getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                                        new ProfileFragment()).commit();
 
                                 FirebaseDatabase.getInstance().getReference("Posts")
                                         .child(post.getPostid()).removeValue()
@@ -223,8 +230,11 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
                                             @Override
                                             public void onComplete(@NonNull Task<Void> task) {
                                                 if (task.isSuccessful()){
-
                                                     deleteNotifications(id, firebaseUser.getUid());
+                                                    mPost.remove(post);
+                                                    notifyDataSetChanged();
+                                                }else {
+
                                                 }
                                             }
                                         });
@@ -329,12 +339,15 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
         reference.push().setValue(hashMap);
     }
     private void deleteNotifications(final String postid, String userid){
+        System.out.println("postid="+postid);
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Notifications").child(userid);
         reference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    if (snapshot.child("postid").getValue().equals(postid)){
+                    Notification notification = snapshot.getValue(Notification.class);
+                    System.out.println(notification);
+                    if (notification.getPostid().equals(postid)){
                         snapshot.getRef().removeValue()
                                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override

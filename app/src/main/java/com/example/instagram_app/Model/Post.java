@@ -2,6 +2,8 @@ package com.example.instagram_app.Model;
 
 import androidx.annotation.NonNull;
 
+import java.util.Objects;
+
 public class Post {
     private String postid;
     private String postimage;
@@ -69,5 +71,30 @@ public class Post {
 
     public void setGpsLongitude(String gpsLongitude) {
         this.gpsLongitude = gpsLongitude;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Post post = (Post) o;
+        return Objects.equals(postid, post.postid);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(postid);
+    }
+
+    @Override
+    public String toString() {
+        return "Post{" +
+                "postid='" + postid + '\'' +
+                ", postimage='" + postimage + '\'' +
+                ", description='" + description + '\'' +
+                ", publisher='" + publisher + '\'' +
+                ", gpsLatitude='" + gpsLatitude + '\'' +
+                ", gpsLongitude='" + gpsLongitude + '\'' +
+                '}';
     }
 }

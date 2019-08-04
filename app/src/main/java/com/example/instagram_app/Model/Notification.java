@@ -48,4 +48,14 @@ public class Notification {
     public void setIspost(boolean ispost) {
         this.ispost = ispost;
     }
+
+    @Override
+    public String toString() {
+        return "Notification{" +
+                "userid='" + userid + '\'' +
+                ", text='" + text + '\'' +
+                ", postid='" + postid + '\'' +
+                ", ispost=" + ispost +
+                '}';
+    }
 }
