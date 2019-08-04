@@ -13,6 +13,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.instagram_app.Controller.OnComplete;
+import com.example.instagram_app.Controller.OnFailed;
+import com.example.instagram_app.Controller.Server;
+import com.example.instagram_app.Model.User;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -23,12 +27,13 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.Optional;
+
 public class LoginActivity extends AppCompatActivity {
     EditText email,password;
     Button login;
     TextView txt_signup;
 
-    FirebaseAuth auth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +45,6 @@ public class LoginActivity extends AppCompatActivity {
         login=findViewById(R.id.login);
         txt_signup=findViewById(R.id.txt_signup);
 
-        auth=FirebaseAuth.getInstance();
 
         txt_signup.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -64,36 +68,33 @@ public class LoginActivity extends AppCompatActivity {
                 }
                 else
                 {
-                    auth.signInWithEmailAndPassword(str_email,str_password).addOnCompleteListener(LoginActivity.this,new OnCompleteListener<AuthResult>() {
+                    Server.Auth.SignIn(str_email, str_password, new OnComplete<Void>() {
                         @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            if(task.isSuccessful())
-                            {
-                                DatabaseReference reference= FirebaseDatabase.getInstance()
-                                        .getReference().child("Users").child(auth.getCurrentUser().getUid());
-
-                                reference.addValueEventListener(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                        pd.dismiss();
-                                        Intent intent=new Intent(LoginActivity.this,MainActivity.class);
-                                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
-                                        startActivity(intent);
-                                        finish();
-
-                                    }
-
-                                    @Override
-                                    public void onCancelled(@NonNull DatabaseError databaseError) {
-                                        pd.dismiss();
-                                    }
-                                });
-                            }else{
-                               pd.dismiss();
-                               Toast.makeText(LoginActivity.this,"Authentication Failed!",Toast.LENGTH_SHORT).show();
-                            }
+                        public void onComplete(Void aVoid) {
+                            Server.Database.getCurrentUser(new OnComplete<User>() {
+                                @Override
+                                public void onComplete(User user) {
+                                    pd.dismiss();
+                                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    startActivity(intent);
+                                    finish();
+                                }
+                            }, new OnFailed<Optional<Exception>>() {
+                                @Override
+                                public void onFailed(Optional<Exception> e) {
+                                    pd.dismiss();
+                                }
+                            });
+                        }
+                    }, new OnFailed<Optional<Exception>>() {
+                        @Override
+                        public void onFailed(Optional<Exception> e) {
+                            pd.dismiss();
+                            Toast.makeText(LoginActivity.this,"Authentication Failed!",Toast.LENGTH_SHORT).show();
                         }
                     });
+
                 }
 
             }
