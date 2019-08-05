@@ -22,6 +22,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.example.instagram_app.Adapter.MyFotoAdapter;
+import com.example.instagram_app.Controller.Server;
 import com.example.instagram_app.EditProfileActivity;
 import com.example.instagram_app.FollowersActivity;
 import com.example.instagram_app.Model.Post;
@@ -111,7 +112,7 @@ public class ProfileFragment extends Fragment {
         myFotos();
         mysaves();
 
-        if(profileid.equals(firebaseUser.getUid()))
+        if(profileid.equals(Server.Auth.getUid()))
         {
             edit_profile.setText("Edit Profile");
         }
@@ -128,18 +129,18 @@ public class ProfileFragment extends Fragment {
                 if (btn.equals("Edit Profile")) {
                     startActivity(new Intent(getContext(), EditProfileActivity.class));
                 } else if (btn.equals("follow")) {
-                    FirebaseDatabase.getInstance().getReference().child("Follow").child(firebaseUser.getUid())
+                    FirebaseDatabase.getInstance().getReference().child("Follow").child(Server.Auth.getUid())
                             .child("following").child(profileid).setValue(true);
                     FirebaseDatabase.getInstance().getReference().child("Follow").child(profileid)
-                            .child("followers").child(firebaseUser.getUid()).setValue(true);
+                            .child("followers").child(Server.Auth.getUid()).setValue(true);
 
                     addNotifications();
 
                 } else if (btn.equals("following")) {
-                    FirebaseDatabase.getInstance().getReference().child("Follow").child(firebaseUser.getUid())
+                    FirebaseDatabase.getInstance().getReference().child("Follow").child(Server.Auth.getUid())
                             .child("following").child(profileid).removeValue();
                     FirebaseDatabase.getInstance().getReference().child("Follow").child(profileid)
-                            .child("followers").child(firebaseUser.getUid()).removeValue();
+                            .child("followers").child(Server.Auth.getUid()).removeValue();
                 }
             }
         });
@@ -194,7 +195,7 @@ public class ProfileFragment extends Fragment {
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Notifications").child(profileid);
 
         HashMap<String, Object> hashMap = new HashMap<>();
-        hashMap.put("userid", firebaseUser.getUid());
+        hashMap.put("userid", Server.Auth.getUid());
         hashMap.put("text", "started following you");
         hashMap.put("postid", "");
         hashMap.put("ispost", false);
@@ -229,7 +230,7 @@ public class ProfileFragment extends Fragment {
     private void checkFollow()
     {
         DatabaseReference reference=FirebaseDatabase.getInstance().getReference()
-                .child("Follow").child(firebaseUser.getUid()).child("following");
+                .child("Follow").child(Server.Auth.getUid()).child("following");
         reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -329,7 +330,7 @@ public class ProfileFragment extends Fragment {
     private void mysaves(){
         mySaves=new ArrayList<>();
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Saves")
-                .child(firebaseUser.getUid());
+                .child(Server.Auth.getUid());
         reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {

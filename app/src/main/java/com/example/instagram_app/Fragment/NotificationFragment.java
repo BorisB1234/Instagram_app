@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.instagram_app.Adapter.NotificationAdapter;
+import com.example.instagram_app.Controller.Server;
 import com.example.instagram_app.Model.Notification;
 import com.example.instagram_app.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -52,7 +53,7 @@ public class NotificationFragment extends Fragment {
 
     private void readNotification() {
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Notifications").child(firebaseUser.getUid());
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Notifications").child(Server.Auth.getUid());
         reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {

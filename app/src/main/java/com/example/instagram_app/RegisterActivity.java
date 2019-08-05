@@ -16,6 +16,7 @@ import com.example.instagram_app.Controller.*;
 
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class RegisterActivity extends AppCompatActivity {
     EditText username,fullname,email,password;
@@ -70,17 +71,18 @@ public class RegisterActivity extends AppCompatActivity {
     }
     private void register(final String username, final String fullname, String email, String password)
     {
-        Server.Auth.SignUp(username, fullname, email, password, new OnComplete<Void>() {
+        Server.Auth.SignUp(username, fullname, email, password, new Consumer<Void>() {
             @Override
-            public void onComplete(Void aVoid) {
+            public void accept(Void aVoid) {
                 pd.dismiss();
                 Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
             }
-        }, new OnFailed<Optional<Exception>>() {
+
+        }, new Consumer<Optional<Exception>>() {
             @Override
-            public void onFailed(Optional<Exception> e) {
+            public void accept(Optional<Exception> e) {
                 pd.dismiss();
                 Toast.makeText(RegisterActivity.this,"you can't register with this email or password",Toast.LENGTH_SHORT).show();
             }

@@ -2,9 +2,10 @@ package com.example.instagram_app.Model;
 
 import androidx.annotation.NonNull;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Post {
+public class Post implements Serializable {
     private String postid;
     private String postimage;
     private String description;

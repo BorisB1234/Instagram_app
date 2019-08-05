@@ -1,6 +1,5 @@
 package com.example.instagram_app;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -17,25 +16,17 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.instagram_app.Adapter.CommentAdapter;
+import com.example.instagram_app.Controller.Server;
 import com.example.instagram_app.Model.Comment;
+import com.example.instagram_app.Model.Notification;
 import com.example.instagram_app.Model.User;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 public class CommentsActivity extends AppCompatActivity {
 
-    private RecyclerView recyclerView;
     private CommentAdapter commentAdapter;
-    private List<Comment> commentList;
 
     EditText addcomment;
     ImageView image_profile;
@@ -44,7 +35,6 @@ public class CommentsActivity extends AppCompatActivity {
     String postid;
     String publisherid;
 
-    FirebaseUser firebaseUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,20 +56,17 @@ public class CommentsActivity extends AppCompatActivity {
         postid = intent.getStringExtra("postid");
         publisherid = intent.getStringExtra("publisherid");
 
-        recyclerView = findViewById(R.id.recycler_view);
+        RecyclerView recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setHasFixedSize(true);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(linearLayoutManager);
-        commentList = new ArrayList<>();
-        commentAdapter = new CommentAdapter(this, commentList, postid);
+        commentAdapter = new CommentAdapter(this, postid);
         recyclerView.setAdapter(commentAdapter);
 
 
         addcomment = findViewById(R.id.add_comment);
         image_profile = findViewById(R.id.image_profile);
         post = findViewById(R.id.post);
-
-        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
         post.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -98,66 +85,72 @@ public class CommentsActivity extends AppCompatActivity {
     }
 
     private void addcomment(){
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Comments").child(postid);
 
-        String commentid=reference.push().getKey();
-
-        HashMap<String, Object> hashMap = new HashMap<>();
-        hashMap.put("comment", addcomment.getText().toString());
-        hashMap.put("publisher", firebaseUser.getUid());
-        hashMap.put("commentid", commentid);
-
-
-        reference.child(commentid).setValue(hashMap);
-        addNotifications();
-        addcomment.setText("");
-    }
-
-    private void addNotifications() {
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Notifications").child(publisherid);
-
-        HashMap<String, Object> hashMap = new HashMap<>();
-        hashMap.put("userid", firebaseUser.getUid());
-        hashMap.put("text", "commented: "+addcomment.getText().toString());
-        hashMap.put("postid", postid);
-        hashMap.put("ispost", true);
-
-        reference.push().setValue(hashMap);
-    }
-
-    private void getImage(){
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users").child(firebaseUser.getUid());
-        reference.addValueEventListener(new ValueEventListener() {
+        Server.Database.addComment(postid, addcomment.getText().toString(),
+                new Consumer<Comment>() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                User user = dataSnapshot.getValue(User.class);
-                Glide.with(getApplicationContext()).load(user.getImageurl()).into(image_profile);
+            public void accept(Comment comment) {
+                addNotifications(comment);
+                addcomment.setText("");
+            }
+        }, new Consumer<Optional<Exception>>() {
+            @Override
+            public void accept(Optional<Exception> e) {
+                //TODO
+            }
+        });
+
+    }
+
+    private void addNotifications(final Comment comment) {
+        Notification notification=new Notification(Server.Auth.getUid(),
+                "commented: "+comment.getComment(),
+                postid,true);
+
+        Server.Database.addNotification(comment.getPublisher(), notification,
+                new Consumer<Void>() {
+            @Override
+            public void accept(Void aVoid) {
 
             }
-
+        }, new Consumer<Optional<Exception>>() {
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+            public void accept(Optional<Exception> e) {
 
             }
         });
     }
 
-    private void readComments(){
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Comments").child(postid);
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                commentList.clear();
-                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    Comment comment = snapshot.getValue(Comment.class);
-                    commentList.add(comment);
-                }
+    private void getImage(){
 
-                commentAdapter.notifyDataSetChanged();
+        Server.Database.getCurrentUser(new Consumer<User>() {
+            @Override
+            public void accept(User user) {
+                Glide.with(getApplicationContext())
+                        .load(user.getImageurl()).into(image_profile);
             }
-
+        }, new Consumer<Optional<Exception>>() {
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+            public void accept(Optional<Exception> e) {
+                e.ifPresent(new Consumer<Exception>() {
+                    @Override
+                    public void accept(Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+            }
+        });
+    }
+
+    private void readComments(){
+        Server.Database.getAllComments(postid, new Consumer<List<Comment>>() {
+            @Override
+            public void accept(List<Comment> comments) {
+                commentAdapter.setmComment(comments);
+            }
+        }, new Consumer<Optional<Exception>>() {
+            @Override
+            public void accept(Optional<Exception> e) {
 
             }
         });

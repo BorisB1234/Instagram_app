@@ -1,6 +1,5 @@
 package com.example.instagram_app;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.ProgressDialog;
@@ -13,21 +12,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.instagram_app.Controller.OnComplete;
-import com.example.instagram_app.Controller.OnFailed;
 import com.example.instagram_app.Controller.Server;
 import com.example.instagram_app.Model.User;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class LoginActivity extends AppCompatActivity {
     EditText email,password;
@@ -68,28 +57,28 @@ public class LoginActivity extends AppCompatActivity {
                 }
                 else
                 {
-                    Server.Auth.SignIn(str_email, str_password, new OnComplete<Void>() {
+                    Server.Auth.SignIn(str_email, str_password, new Consumer<Void>() {
                         @Override
-                        public void onComplete(Void aVoid) {
-                            Server.Database.getCurrentUser(new OnComplete<User>() {
+                        public void accept(Void aVoid) {
+                            Server.Database.getCurrentUser(new Consumer<User>() {
                                 @Override
-                                public void onComplete(User user) {
+                                public void accept(User user) {
                                     pd.dismiss();
                                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                                     startActivity(intent);
                                     finish();
                                 }
-                            }, new OnFailed<Optional<Exception>>() {
+                            }, new Consumer<Optional<Exception>>() {
                                 @Override
-                                public void onFailed(Optional<Exception> e) {
+                                public void accept(Optional<Exception> e) {
                                     pd.dismiss();
                                 }
                             });
                         }
-                    }, new OnFailed<Optional<Exception>>() {
+                    }, new Consumer<Optional<Exception>>() {
                         @Override
-                        public void onFailed(Optional<Exception> e) {
+                        public void accept(Optional<Exception> e) {
                             pd.dismiss();
                             Toast.makeText(LoginActivity.this,"Authentication Failed!",Toast.LENGTH_SHORT).show();
                         }

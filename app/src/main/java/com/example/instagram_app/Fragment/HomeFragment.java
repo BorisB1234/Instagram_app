@@ -16,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
 import com.example.instagram_app.Adapter.PostAdapter;
+import com.example.instagram_app.Controller.Server;
 import com.example.instagram_app.Model.Post;
 import com.example.instagram_app.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -96,7 +97,7 @@ public class HomeFragment extends Fragment {
                 postLists.clear();
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()){
                     Post post=snapshot.getValue(Post.class);
-                    if(post.getPublisher().equals(firebaseUser.getUid()))
+                    if(post.getPublisher().equals(Server.Auth.getUid()))
                     {
                         postLists.add(post);
 

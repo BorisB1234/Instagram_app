@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.instagram_app.CommentsActivity;
+import com.example.instagram_app.Controller.Server;
 import com.example.instagram_app.FollowersActivity;
 import com.example.instagram_app.Fragment.HomeFragment;
 import com.example.instagram_app.Fragment.PostDetailFragment;
@@ -149,10 +150,10 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
             @Override
             public void onClick(View v) {
                 if(viewHolder.save.getTag().equals("save")){
-                    FirebaseDatabase.getInstance().getReference().child("Saves").child(firebaseUser.getUid())
+                    FirebaseDatabase.getInstance().getReference().child("Saves").child(Server.Auth.getUid())
                             .child(post.getPostid()).setValue(true);
                 }else {
-                    FirebaseDatabase.getInstance().getReference().child("Saves").child(firebaseUser.getUid())
+                    FirebaseDatabase.getInstance().getReference().child("Saves").child(Server.Auth.getUid())
                             .child(post.getPostid()).removeValue();
                 }
             }
@@ -163,11 +164,11 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
             public void onClick(View view) {
                 if(viewHolder.like.getTag().equals("like")){
                     FirebaseDatabase.getInstance().getReference().child("Likes").child(post.getPostid())
-                            .child(firebaseUser.getUid()).setValue(true);
+                            .child(Server.Auth.getUid()).setValue(true);
                     addNotifications(post.getPublisher(),post.getPostid());
                 }else {
                     FirebaseDatabase.getInstance().getReference().child("Likes").child(post.getPostid())
-                            .child(firebaseUser.getUid()).removeValue();
+                            .child(Server.Auth.getUid()).removeValue();
                 }
             }
         });
@@ -230,7 +231,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
                                             @Override
                                             public void onComplete(@NonNull Task<Void> task) {
                                                 if (task.isSuccessful()){
-                                                    deleteNotifications(id, firebaseUser.getUid());
+                                                    deleteNotifications(id, Server.Auth.getUid());
                                                     mPost.remove(post);
                                                     notifyDataSetChanged();
                                                 }else {
@@ -248,7 +249,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
                     }
                 });
                 popupMenu.inflate(R.menu.post_menu);
-                if (!post.getPublisher().equals(firebaseUser.getUid())){
+                if (!post.getPublisher().equals(Server.Auth.getUid())){
                     popupMenu.getMenu().findItem(R.id.edit).setVisible(false);
                     popupMenu.getMenu().findItem(R.id.delete).setVisible(false);
                 }
@@ -311,7 +312,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
         reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.child(firebaseUser.getUid()).exists()){
+                if(dataSnapshot.child(Server.Auth.getUid()).exists()){
                     imageView.setImageResource(R.drawable.ic_liked);
                     imageView.setTag("liked");
                 }else {
@@ -331,7 +332,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Notifications").child(userid);
 
         HashMap<String,Object> hashMap = new HashMap<>();
-        hashMap.put("userid",firebaseUser.getUid());
+        hashMap.put("userid",Server.Auth.getUid());
         hashMap.put("text","liked your post");
         hashMap.put("postid",postid);
         hashMap.put("ispost",true);
@@ -403,7 +404,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("Saves")
-                .child(firebaseUser.getUid());
+                .child(Server.Auth.getUid());
         reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {

@@ -1,6 +1,9 @@
 package com.example.instagram_app.Model;
 
-public class Notification {
+import java.io.Serializable;
+import java.util.Objects;
+
+public class Notification implements Serializable {
 
     private String userid;
     private String text;
@@ -57,5 +60,19 @@ public class Notification {
                 ", postid='" + postid + '\'' +
                 ", ispost=" + ispost +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Notification that = (Notification) o;
+        return Objects.equals(userid, that.userid) &&
+                Objects.equals(postid, that.postid);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(userid, postid);
     }
 }
