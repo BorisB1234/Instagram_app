@@ -1,12 +1,18 @@
 package com.example.instagram_app.Model;
 
+import androidx.annotation.NonNull;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
 import java.io.Serializable;
 import java.util.Objects;
-
+@Entity
 public class Comment implements Serializable {
 
     private String comment;
     private String publisher;
+    @PrimaryKey
+    @NonNull
     private String commentid;
 
 
