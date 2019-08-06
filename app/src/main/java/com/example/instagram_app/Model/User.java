@@ -1,11 +1,17 @@
 package com.example.instagram_app.Model;
 
+import androidx.annotation.NonNull;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
 import java.io.Serializable;
 import java.util.Objects;
-
+@Entity
 public class User implements Serializable {
-
+    @PrimaryKey
+    @NonNull
     private String id;
+
     private String username;
     private String fullname;
     private String imageurl;

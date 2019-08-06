@@ -9,6 +9,7 @@ import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.Update;
 
 import java.util.List;
 
@@ -29,7 +30,13 @@ public interface PostDao {
     @Insert
     void insert(List<Post> Posts);
 
+    @Update
+    void update(Post Post);
+
     @Delete
     void delete(Post Post);
+
+    @Query("Delete From Post")
+    void deleteAllPosts();
 }
 
