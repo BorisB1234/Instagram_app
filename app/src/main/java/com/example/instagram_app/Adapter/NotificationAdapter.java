@@ -13,17 +13,11 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.instagram_app.Controller.Server;
 import com.example.instagram_app.Fragment.PostDetailFragment;
 import com.example.instagram_app.Fragment.ProfileFragment;
 import com.example.instagram_app.Model.Notification;
-import com.example.instagram_app.Model.Post;
-import com.example.instagram_app.Model.User;
 import com.example.instagram_app.R;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.List;
 
@@ -60,25 +54,22 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             viewHolder.post_image.setVisibility(View.GONE);
         }
 
-        viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(notification.isIspost()){
-                    SharedPreferences.Editor editor = mContext.getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
-                    editor.putString("postid",notification.getPostid());
-                    editor.apply();
+        viewHolder.itemView.setOnClickListener(v -> {
+            if(notification.isIspost()){
+                SharedPreferences.Editor editor = mContext.getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
+                editor.putString("postid",notification.getPostid());
+                editor.apply();
 
-                    ((FragmentActivity)mContext).getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                            new PostDetailFragment()).commit();
+                ((FragmentActivity)mContext).getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new PostDetailFragment()).commit();
 
-                }else {
-                    SharedPreferences.Editor editor = mContext.getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
-                    editor.putString("profileid",notification.getUserid());
-                    editor.apply();
+            }else {
+                SharedPreferences.Editor editor = mContext.getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit();
+                editor.putString("profileid",notification.getUserid());
+                editor.apply();
 
-                    ((FragmentActivity)mContext).getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                            new ProfileFragment()).commit();
-                }
+                ((FragmentActivity)mContext).getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new ProfileFragment()).commit();
             }
         });
     }
@@ -107,36 +98,18 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     }
 
     private void getUserInfo(final ImageView imageView, final TextView username, String publisherid){
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference()
-                .child("Users").child(publisherid);
 
-        reference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                User user = dataSnapshot.getValue(User.class);
-                Glide.with(mContext).load(user.getImageurl()).into(imageView);
-                username.setText(user.getUsername());
-            }
+        Server.Database.getUser(publisherid, user -> {
+            Glide.with(mContext).load(user.getImageurl()).into(imageView);
+            username.setText(user.getUsername());
+        }, e -> {
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
         });
+
     }
     private void getPostImage(final ImageView imageView, String postid){
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Posts").child(postid);
-        reference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Post post = dataSnapshot.getValue(Post.class);
-                Glide.with(mContext).load(post.getPostimage()).into(imageView);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+        Server.Database.getPost(postid,
+                post -> Glide.with(mContext).load(post.getPostimage()).into(imageView),
+                e -> { });
     }
 }

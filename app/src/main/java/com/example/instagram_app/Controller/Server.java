@@ -1,10 +1,14 @@
 package com.example.instagram_app.Controller;
 
+import android.content.Context;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.instagram_app.Model.Comment;
 import com.example.instagram_app.Model.Notification;
+import com.example.instagram_app.Model.Post;
 import com.example.instagram_app.Model.User;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -33,26 +37,20 @@ public class Server {
         private static DatabaseReference UserRef = databaseRef.child("Users");
         private static DatabaseReference CommentsRef = databaseRef.child("Comments");
         private static DatabaseReference NotificationsRef = databaseRef.child("Notifications");
+        private static DatabaseReference PostsRef = databaseRef.child("Posts");
+        private static DatabaseReference LikesRef = databaseRef.child("Likes");
 
         public static void addUser(final User user,final Consumer<Void> onComplete,
                                    final Consumer<Optional<Exception>> onFailed){
-            UserRef.child(user.getId()).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
-                    if(task.isSuccessful())
-                    {
-                        onComplete.accept(null);
-                    }
-                    else {
-                        onFailed.accept(Optional.<Exception>empty());
-                    }
+            UserRef.child(user.getId()).setValue(user).addOnCompleteListener(task -> {
+                if(task.isSuccessful())
+                {
+                    onComplete.accept(null);
                 }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    onFailed.accept(Optional.of(e));
+                else {
+                    onFailed.accept(Optional.empty());
                 }
-            });
+            }).addOnFailureListener(e -> onFailed.accept(Optional.of(e)));
         }
 
         public static void getUser(String uid,final Consumer<User> onComplete,
@@ -62,7 +60,7 @@ public class Server {
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     User user = dataSnapshot.getValue(User.class);
                     if (user!=null) onComplete.accept(user);
-                    else onFailed.accept(Optional.<Exception>empty());
+                    else onFailed.accept(Optional.empty());
                 }
 
                 @Override
@@ -88,17 +86,9 @@ public class Server {
             String cid = ref.push().getKey();
             final Comment comment=new Comment(stcomment,
                     Server.Auth.getUid(),cid);
-            ref.child(cid).setValue(comment).addOnSuccessListener(new OnSuccessListener<Void>() {
-                @Override
-                public void onSuccess(Void aVoid) {
-                    onComplete.accept(comment);
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    onFailed.accept(Optional.ofNullable(e));
-                }
-            });
+            ref.child(cid).setValue(comment)
+                    .addOnSuccessListener(aVoid -> onComplete.accept(comment))
+                    .addOnFailureListener(e -> onFailed.accept(Optional.of(e)));
         }
 
         public static void addNotification(final String publisherId,
@@ -106,17 +96,58 @@ public class Server {
                                            final Consumer<Void> onComplete,
                                            final Consumer<Optional<Exception>> onFailed){
             NotificationsRef.child(publisherId).push().setValue(notification)
-                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    .addOnCompleteListener(task -> onComplete.accept(null))
+                    .addOnFailureListener(e -> onFailed.accept(Optional.of(e)));
+        }
+
+        public static void deleteNotifications(final String postid, String userid,
+                                               final Consumer<Void> onComplete,
+                                               final Consumer<Optional<Exception>> onFailed){
+            NotificationsRef.child(userid).orderByChild("postid").equalTo(postid)
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
-                public void onComplete(@NonNull Task<Void> task) {
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        snapshot.getRef().removeValue();
+                    }
                     onComplete.accept(null);
+
                 }
-            }).addOnFailureListener(new OnFailureListener() {
+
                 @Override
-                public void onFailure(@NonNull Exception e) {
-                    onFailed.accept(Optional.ofNullable(e));
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    onFailed.accept(Optional.ofNullable(databaseError.toException()));
                 }
             });
+
+//                    .addListenerForSingleValueEvent(new ValueEventListener() {
+//                @Override
+//                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                    for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+//
+//                        snapshot.getRef().removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+//                            @Override
+//                            public void onComplete(@NonNull Task<Void> task) {
+//
+//                            }
+//                        }).addOnFailureListener(new OnFailureListener() {
+//                            @Override
+//                            public void onFailure(@NonNull Exception e) {
+//
+//                            }
+//                        });
+//
+//                        Notification notification = snapshot.getValue(Notification.class);
+//                            snapshot.getRef().removeValue()
+//                                    .addOnCompleteListener(task -> Toast.makeText(mContext, "Deleted!", Toast.LENGTH_SHORT).show());
+//                    }
+//                }
+//
+//                @Override
+//                public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//                }
+//            });
         }
 
         public static void getAllComments(final String postid,
@@ -136,10 +167,101 @@ public class Server {
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
                     onFailed.accept(Optional.ofNullable(
-                            (Exception)databaseError.toException()));
+                            databaseError.toException()));
                 }
             });
         }
+
+        public static void deleteComment(final String postid, final String commentID,
+                                         final Consumer<Void> onComplete,
+                                         final Consumer<Optional<Exception>> onFailed) {
+            CommentsRef.child(postid).child(commentID)
+                    .removeValue().addOnCompleteListener(task -> {
+                        if(task.isSuccessful()){
+                            onComplete.accept(null);
+                        }
+                    }).addOnFailureListener(e->onFailed.accept(Optional.of(e)));
+        }
+
+        public static void getPost(String pid,final Consumer<Post> onComplete,
+                                   final Consumer<Optional<Exception>> onFailed){
+            PostsRef.child(pid).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    Post post = dataSnapshot.getValue(Post.class);
+                    if (post!=null) onComplete.accept(post);
+                    else onFailed.accept(Optional.empty());
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    Exception databaseException = databaseError.toException();
+                    onFailed.accept(Optional.of(databaseException));
+                }
+            });
+        }
+
+        public static void savePost(String uid, String postid,final Consumer<Void> onComplete,
+                                    final Consumer<Optional<Exception>> onFailed) {
+            SavesRef.child(uid).child(postid).setValue(true).addOnCompleteListener(task -> {
+                if (task.isSuccessful())onComplete.accept(null);
+                else onFailed.accept(Optional.empty());
+            }).addOnFailureListener(e -> onFailed.accept(Optional.of(e)));
+        }
+
+        public static void removeSavedPost(String uid, String postid,final Consumer<Void> onComplete,
+                                    final Consumer<Optional<Exception>> onFailed) {
+            SavesRef.child(uid).child(postid).removeValue().addOnCompleteListener(task -> {
+                if (task.isSuccessful())onComplete.accept(null);
+                else onFailed.accept(Optional.empty());
+            }).addOnFailureListener(e -> onFailed.accept(Optional.of(e)));
+
+        }
+
+        public static void addLike(String uid, String postid,final Consumer<Void> onComplete,
+                                    final Consumer<Optional<Exception>> onFailed) {
+            LikesRef.child(postid).child(uid).setValue(true).addOnCompleteListener(task -> {
+                if (task.isSuccessful())onComplete.accept(null);
+                else onFailed.accept(Optional.empty());
+            }).addOnFailureListener(e -> onFailed.accept(Optional.of(e)));
+        }
+
+        public static void removeLike(String uid, String postid,final Consumer<Void> onComplete,
+                                   final Consumer<Optional<Exception>> onFailed) {
+            LikesRef.child(postid).child(uid).removeValue().addOnCompleteListener(task -> {
+                if (task.isSuccessful())onComplete.accept(null);
+                else onFailed.accept(Optional.empty());
+            }).addOnFailureListener(e -> onFailed.accept(Optional.of(e)));
+        }
+
+        public static void removePost(String postid, final Consumer<Void> onComplete,
+                                      final Consumer<Optional<Exception>> onFailed) {
+
+            PostsRef.child(postid).removeValue()
+                    .addOnCompleteListener(task -> {
+                if (task.isSuccessful())onComplete.accept(null);
+                else onFailed.accept(Optional.empty());
+            })
+                    .addOnFailureListener(e -> onFailed.accept(Optional.of(e)));
+        }
+
+        public static void isLiked(String postid, String uid, final Consumer<Boolean> onComplete,
+                                   final Consumer<Optional<Exception>> onFailed){
+            LikesRef.child(postid).child(uid).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) onComplete.accept(true);
+                    else onComplete.accept(false);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    onFailed.accept(Optional.of(databaseError.toException()));
+                }
+            });
+        }
+
+
 
     }
 
@@ -148,22 +270,14 @@ public class Server {
 
         public static void SignIn(final String email,final String password
                 ,final Consumer<Void> onComplete,final Consumer<Optional<Exception>> onFailed){
-            auth.signInWithEmailAndPassword(email,password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                @Override
-                public void onComplete(@NonNull Task<AuthResult> task) {
-                    if(task.isSuccessful())
-                    {
-                        onComplete.accept(null);
-                    }else{
-                        onFailed.accept(Optional.<Exception>empty());
-                    }
+            auth.signInWithEmailAndPassword(email,password).addOnCompleteListener(task -> {
+                if(task.isSuccessful())
+                {
+                    onComplete.accept(null);
+                }else{
+                    onFailed.accept(Optional.empty());
                 }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    onFailed.accept(Optional.of(e));
-                }
-            });
+            }).addOnFailureListener(e -> onFailed.accept(Optional.of(e)));
         }
         public static void SignOut(){
             auth.signOut();
@@ -173,27 +287,18 @@ public class Server {
                                   final Consumer<Optional<Exception>> onFailed){
             final String imageDef="https://firebasestorage.googleapis.com/v0/b/instagramapp-3c84e.appspot.com/o/placeholder.png?alt=media&token=98a160e7-58c4-4332-94de-c99c97bfb41d";
             auth.createUserWithEmailAndPassword(email,password)
-                    .addOnCompleteListener( new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            if(task.isSuccessful())
-                            {
-                                final String userid=getUid();
-                                User user=new User(userid,username,fullname,imageDef,"");
-                                Database.addUser(user,onComplete,onFailed);
+                    .addOnCompleteListener(task -> {
+                        if(task.isSuccessful())
+                        {
+                            final String userid=getUid();
+                            User user=new User(userid,username,fullname,imageDef,"");
+                            Database.addUser(user,onComplete,onFailed);
 
-                            }
-                            else {
-                                onFailed.accept(Optional.<Exception>empty());
-                            }
                         }
-
-                    }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    onFailed.accept(Optional.<Exception>empty());
-                }
-            });
+                        else {
+                            onFailed.accept(Optional.empty());
+                        }
+                    }).addOnFailureListener(e -> onFailed.accept(Optional.empty()));
 
         }
         @Nullable
