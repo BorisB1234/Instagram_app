@@ -1,20 +1,18 @@
 package com.example.instagram_app.Controller;
 
 import android.content.Context;
-import android.widget.Toast;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.bumptech.glide.Glide;
 import com.example.instagram_app.Model.Comment;
 import com.example.instagram_app.Model.Notification;
 import com.example.instagram_app.Model.Post;
 import com.example.instagram_app.Model.User;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
+import com.example.instagram_app.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -24,6 +22,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -39,6 +38,8 @@ public class Server {
         private static DatabaseReference NotificationsRef = databaseRef.child("Notifications");
         private static DatabaseReference PostsRef = databaseRef.child("Posts");
         private static DatabaseReference LikesRef = databaseRef.child("Likes");
+        private static DatabaseReference FollowRef = databaseRef.child("Follow");
+
 
         public static void addUser(final User user,final Consumer<Void> onComplete,
                                    final Consumer<Optional<Exception>> onFailed){
@@ -120,34 +121,6 @@ public class Server {
                 }
             });
 
-//                    .addListenerForSingleValueEvent(new ValueEventListener() {
-//                @Override
-//                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                    for (DataSnapshot snapshot : dataSnapshot.getChildren()){
-//
-//                        snapshot.getRef().removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-//                            @Override
-//                            public void onComplete(@NonNull Task<Void> task) {
-//
-//                            }
-//                        }).addOnFailureListener(new OnFailureListener() {
-//                            @Override
-//                            public void onFailure(@NonNull Exception e) {
-//
-//                            }
-//                        });
-//
-//                        Notification notification = snapshot.getValue(Notification.class);
-//                            snapshot.getRef().removeValue()
-//                                    .addOnCompleteListener(task -> Toast.makeText(mContext, "Deleted!", Toast.LENGTH_SHORT).show());
-//                    }
-//                }
-//
-//                @Override
-//                public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//                }
-//            });
         }
 
         public static void getAllComments(final String postid,
@@ -262,7 +235,116 @@ public class Server {
         }
 
 
+        public static void getNumOfLikes(String postId, final Consumer<Integer> onComplete,
+                                         final Consumer<Optional<Exception>> onFailed) {
+            LikesRef.child(postId).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
+                    onComplete.accept((int) dataSnapshot.getChildrenCount());
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    onFailed.accept(Optional.ofNullable(
+                            databaseError.toException()));
+                }
+            });
+
+        }
+
+        public static void editPost(String postid, HashMap<String, Object> hashMap) {
+
+            PostsRef.child(postid).updateChildren(hashMap);
+        }
+
+        public static void publisherInfo(final ImageView image_profile, final TextView username, final TextView publisher, String userId, Context mContext) {
+
+            UserRef.child(userId).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    User user = dataSnapshot.getValue(User.class);
+                    Glide.with(mContext).load(user.getImageurl()).into(image_profile);
+                    username.setText(user.getUsername());
+                    publisher.setText(user.getUsername());
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+        }
+
+
+        public static void isSaved(String postid, ImageView imageView, String uid) {
+
+            SavesRef.child(uid).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if(dataSnapshot.child(postid).exists()){
+                        imageView.setImageResource(R.drawable.ic_save_black);
+                        imageView.setTag("saved");
+                    }else {
+                        imageView.setImageResource(R.drawable.ic_savee_black);
+                        imageView.setTag("save");
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+
+        }
+
+        public static void getTextDescription(String postid, final Consumer<String> onComplete,
+                                              final Consumer<Optional<Exception>> onFailed) {
+            
+            PostsRef.child(postid).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    dataSnapshot.getValue(Post.class).getDescription();
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+            
+        }
+
+        public static void follow(String uid, String id, boolean b) {
+
+            if(b) {
+                FollowRef.child(uid).child("following").child(id).setValue(true);
+                FollowRef.child(id).child("followers").child(uid).setValue(true);
+            }else {
+                FollowRef.child(uid).child("following").child(id).removeValue();
+                FollowRef.child(id).child("followers").child(uid).removeValue();
+            }
+        }
+
+        public static void isFollowing(String uid, String userid, final Consumer<Boolean> onComplete,
+                                       final Consumer<Optional<Exception>> onFailed) {
+
+            FollowRef.child(uid).child("following").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if(dataSnapshot.child(userid).exists())
+                        onComplete.accept(true);
+                    else onComplete.accept(false);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    onFailed.accept(Optional.of(databaseError.toException()));
+                }
+            });
+
+        }
     }
 
     public static class Auth{

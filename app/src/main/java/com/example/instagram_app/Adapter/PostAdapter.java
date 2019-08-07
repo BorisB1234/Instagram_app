@@ -2,11 +2,9 @@ package com.example.instagram_app.Adapter;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -27,24 +25,13 @@ import com.example.instagram_app.Controller.Server;
 import com.example.instagram_app.FollowersActivity;
 import com.example.instagram_app.Fragment.PostDetailFragment;
 import com.example.instagram_app.Fragment.ProfileFragment;
-import com.example.instagram_app.Model.Comment;
 import com.example.instagram_app.Model.Notification;
 import com.example.instagram_app.Model.Post;
-import com.example.instagram_app.Model.User;
 import com.example.instagram_app.R;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
+
 
 public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
 
@@ -266,83 +253,24 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
 
     }
     private void deleteNotifications(final String postid, String userid){
-//        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Notifications").child(userid);
-//        reference.addListenerForSingleValueEvent(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                for (DataSnapshot snapshot : dataSnapshot.getChildren()){
-//                    Notification notification = snapshot.getValue(Notification.class);
-//                    if (notification.getPostid().equals(postid)){
-//                        snapshot.getRef().removeValue()
-//                                .addOnCompleteListener(task -> Toast.makeText(mContext, "Deleted!", Toast.LENGTH_SHORT).show());
-//                    }
-//                }
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//
-//            }
-//        });
-
         Server.Database.deleteNotifications(postid, userid,
                 aVoid -> Toast.makeText(mContext, "Deleted!", Toast.LENGTH_SHORT).show(), e -> {});
     }
     private void nrLikes(final TextView likes, String postId){
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("Likes").child(postId);
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                likes.setText(dataSnapshot.getChildrenCount()+" likes");
-            }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
+        Server.Database.getNumOfLikes(postId,integer -> likes.setText(integer+" likes"),e -> {});
 
     }
 
     private void publisherInfo(final ImageView image_profile, final TextView username, final TextView publisher, String userId){
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users").child(userId);
 
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                User user = dataSnapshot.getValue(User.class);
-                Glide.with(mContext).load(user.getImageurl()).into(image_profile);
-                username.setText(user.getUsername());
-                publisher.setText(user.getUsername());
-            }
+        Server.Database.publisherInfo(image_profile,username,publisher,userId, mContext);
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
     }
     private void isSaved(final String postid, final ImageView imageView){
 
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("Saves")
-                .child(Server.Auth.getUid());
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.child(postid).exists()){
-                    imageView.setImageResource(R.drawable.ic_save_black);
-                    imageView.setTag("saved");
-                }else {
-                    imageView.setImageResource(R.drawable.ic_savee_black);
-                    imageView.setTag("save");
-                }
-            }
+        Server.Database.isSaved(postid,imageView,Server.Auth.getUid());
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
     }
 
     private void editPost(final String postid){
@@ -364,8 +292,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
                     HashMap<String,Object> hashMap = new HashMap<>();
                     hashMap.put("description",editText.getText().toString());
 
-                    FirebaseDatabase.getInstance().getReference("Posts")
-                            .child(postid).updateChildren(hashMap);
+                    Server.Database.editPost(postid,hashMap);
                 });
         alertDialog.setNegativeButton("Cancel",
                 (dialogInterface, which) -> dialogInterface.dismiss());
@@ -373,18 +300,11 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
     }
 
     private void getText(String postid, final EditText editText){
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Posts")
-                .child(postid);
-        reference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                editText.setText(dataSnapshot.getValue(Post.class).getDescription());
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+        Server.Database.getTextDescription(postid, string -> {
+            editText.setText(string);
 
-            }
-        });
+        },e -> {});
+
     }
 }
