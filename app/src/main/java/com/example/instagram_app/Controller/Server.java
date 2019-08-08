@@ -1,6 +1,7 @@
 package com.example.instagram_app.Controller;
 
 import android.content.Context;
+import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -301,7 +302,7 @@ public class Server {
 
         public static void getTextDescription(String postid, final Consumer<String> onComplete,
                                               final Consumer<Optional<Exception>> onFailed) {
-            
+
             PostsRef.child(postid).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -313,7 +314,7 @@ public class Server {
 
                 }
             });
-            
+
         }
 
         public static void follow(String uid, String id, boolean b) {
@@ -341,6 +342,172 @@ public class Server {
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
                     onFailed.accept(Optional.of(databaseError.toException()));
+                }
+            });
+
+        }
+
+
+        public static void readNotification(String uid, final Consumer<List> onComplete,
+                                            final Consumer<Optional<Exception>> onFailed) {
+            List<Notification>notificationList=new ArrayList<>();
+            NotificationsRef.child(uid).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    notificationList.clear();
+                    for(DataSnapshot snapshot: dataSnapshot.getChildren()) {
+                        Notification notification = snapshot.getValue(Notification.class);
+                        notificationList.add(notification);
+                    }
+
+                    onComplete.accept(notificationList);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                        onFailed.accept(Optional.of(databaseError.toException()));
+
+                }
+            });
+
+        }
+
+        public static void getFollow(final String uid, final Boolean followers,
+                                          final Consumer<List<String>> onComplete,
+                                          final Consumer<Optional<Exception>> onFailed){
+
+            String child;
+            if(followers)
+                child="followers";
+            else child="following";
+
+            FollowRef.child(uid).child(child).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    List<String> follow=new ArrayList<>();
+                    for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+                        follow.add(snapshot.getKey());
+                    }
+                    onComplete.accept(follow);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    onFailed.accept(Optional.ofNullable(
+                            databaseError.toException()));
+                }
+            });
+        }
+
+        public static void getAllPosts(final String uid,
+                                          final Consumer<List<Post>> onComplete,
+                                          final Consumer<Optional<Exception>> onFailed){
+            PostsRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    List<Post> posts=new ArrayList<>();
+                    for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+                        Post post = snapshot.getValue(Post.class);
+                        if(post.getPublisher().equals(uid))
+                            posts.add(post);
+                    }
+                    onComplete.accept(posts);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    onFailed.accept(Optional.ofNullable(
+                            databaseError.toException()));
+                }
+            });
+        }
+
+        public static void getAllPostsFromAllUsers(
+                                       final Consumer<List<Post>> onComplete,
+                                       final Consumer<Optional<Exception>> onFailed){
+            PostsRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    List<Post> posts=new ArrayList<>();
+                    for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+                        Post post = snapshot.getValue(Post.class);
+                            posts.add(post);
+                    }
+                    onComplete.accept(posts);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    onFailed.accept(Optional.ofNullable(
+                            databaseError.toException()));
+                }
+            });
+        }
+
+        public static void getAllSaves(String uid, final Consumer<List<String>> onComplete,
+                                       final Consumer<Optional<Exception>> onFailed) {
+
+            SavesRef.child(uid).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    List<String> list_saves=new ArrayList<>();
+                    for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+                            list_saves.add(snapshot.getKey());
+                    }
+                    onComplete.accept(list_saves);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    onFailed.accept(Optional.ofNullable(
+                            databaseError.toException()));
+                }
+            });
+
+        }
+
+        public static void searchUsers(String s, final Consumer<List<User>> onComplete,
+                                       final Consumer<Optional<Exception>> onFailed) {
+
+            UserRef.orderByChild("username")
+                    .startAt(s)
+                    .endAt(s+"\uf8ff").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    List<User> users=new ArrayList<>();
+
+                    for(DataSnapshot snapshot:dataSnapshot.getChildren())
+                    {
+                        users.add(snapshot.getValue(User.class));
+                    }
+                    onComplete.accept(users);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+
+        }
+
+        public static void getAllUsers(final Consumer<List<User>> onComplete,
+                                       final Consumer<Optional<Exception>> onFailed) {
+            List<User> users=new ArrayList<>();
+
+            UserRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    for(DataSnapshot snapshot:dataSnapshot.getChildren())
+                    {
+                        users.add(snapshot.getValue(User.class));
+                    }
+                    onComplete.accept(users);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
                 }
             });
 

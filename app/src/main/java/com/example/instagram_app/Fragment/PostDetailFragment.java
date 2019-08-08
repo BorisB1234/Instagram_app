@@ -3,30 +3,21 @@ package com.example.instagram_app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.instagram_app.Adapter.PostAdapter;
+import com.example.instagram_app.Controller.Server;
 import com.example.instagram_app.MapsActivity;
 import com.example.instagram_app.Model.Post;
-import com.example.instagram_app.PostActivity;
 import com.example.instagram_app.R;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,69 +51,30 @@ public class PostDetailFragment extends Fragment {
         recyclerView.setAdapter(postAdapter);
         mapLocBtn=view.findViewById(R.id.mapLocation);
 
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Posts").child(postid);
-
-        reference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Post post = dataSnapshot.getValue(Post.class);
-                gpsLatitude=post.getGpsLatitude();
-                gpsLongitude=post.getGpsLongitude();
-                Log.v("TAG4",gpsLongitude);
-                Log.v("TAG4",gpsLatitude);
-
-                if((gpsLongitude.equals("0")&&gpsLatitude.equals("0")||gpsLongitude.equals("")||gpsLatitude.equals("")))
-                {
-                    mapLocBtn.setVisibility(View.GONE);
-                }
-                else{
-                    mapLocBtn.setVisibility(View.VISIBLE);
-                }
+        Server.Database.getPost(postid,post -> {
+            gpsLatitude=post.getGpsLatitude();
+            gpsLongitude=post.getGpsLongitude();
+            if((gpsLongitude.equals("0")&&gpsLatitude.equals("0")||gpsLongitude.equals("")||gpsLatitude.equals("")))
+            {
+                mapLocBtn.setVisibility(View.GONE);
+            }
+            else{
+                mapLocBtn.setVisibility(View.VISIBLE);
             }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+            postList.clear();
+            if (post!=null)
+                postList.add(post);
+            postAdapter.notifyDataSetChanged();
+        },e -> {});
 
-            }
+        mapLocBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), MapsActivity.class);
+            intent.putExtra("gpsLongitude",gpsLongitude);
+            intent.putExtra("gpsLatitude",gpsLatitude);
+
+            startActivity(intent);
         });
-
-        mapLocBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getActivity(), MapsActivity.class);
-                intent.putExtra("gpsLongitude",gpsLongitude);
-                intent.putExtra("gpsLatitude",gpsLatitude);
-
-                startActivity(intent);
-            }
-        });
-        readPost();
-
         return view;
     }
-
-    private void readPost() {
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Posts").child(postid);
-
-        reference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                System.out.println("zzzzzzzzzzzzzzzzzzzzzzzzzzzzz");
-                postList.clear();
-                Post post = dataSnapshot.getValue(Post.class);
-                System.out.println(post);
-                if (post!=null)
-                    postList.add(post);
-                System.out.println(postList);
-                postAdapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-
 }

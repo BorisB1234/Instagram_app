@@ -28,7 +28,7 @@ public class CommentsActivity extends AppCompatActivity {
 
     String postid;
     String publisherid;
-
+    String publisherPostId="";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +71,7 @@ public class CommentsActivity extends AppCompatActivity {
     }
 
     private void addcomment(){
+        Server.Database.getPost(postid,post1 -> publisherPostId=post1.getPublisher(), e -> {});
 
         Server.Database.addComment(postid, addcomment.getText().toString(),
                 comment -> {
@@ -83,11 +84,13 @@ public class CommentsActivity extends AppCompatActivity {
     }
 
     private void addNotifications(final Comment comment) {
+
         Notification notification=new Notification(Server.Auth.getUid(),
                 "commented: "+comment.getComment(),
                 postid,true);
 
-        Server.Database.addNotification(comment.getPublisher(), notification,
+
+        Server.Database.addNotification(publisherPostId, notification,
                 aVoid -> {
 
                 }, e -> {

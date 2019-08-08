@@ -3,15 +3,7 @@ package com.example.instagram_app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,27 +12,23 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
 import com.example.instagram_app.Adapter.MyFotoAdapter;
 import com.example.instagram_app.Controller.Server;
 import com.example.instagram_app.EditProfileActivity;
 import com.example.instagram_app.FollowersActivity;
+import com.example.instagram_app.Model.Notification;
 import com.example.instagram_app.Model.Post;
-import com.example.instagram_app.Model.User;
 import com.example.instagram_app.OptionsActivity;
 import com.example.instagram_app.R;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 
 public class ProfileFragment extends Fragment {
@@ -58,7 +46,6 @@ public class ProfileFragment extends Fragment {
     MyFotoAdapter myFotoAdapter;
     List<Post> postList;
 
-    FirebaseUser firebaseUser;
     String profileid;
 
     ImageButton my_fotos,saved_fotos;
@@ -68,9 +55,6 @@ public class ProfileFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
-
-
-        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
         SharedPreferences prefs = getContext().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
         profileid = prefs.getString("profileid", "none");
@@ -122,254 +106,120 @@ public class ProfileFragment extends Fragment {
             saved_fotos.setVisibility(View.GONE);
         }
 
-        edit_profile.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String btn = edit_profile.getText().toString();
-                if (btn.equals("Edit Profile")) {
-                    startActivity(new Intent(getContext(), EditProfileActivity.class));
-                } else if (btn.equals("follow")) {
-                    FirebaseDatabase.getInstance().getReference().child("Follow").child(Server.Auth.getUid())
-                            .child("following").child(profileid).setValue(true);
-                    FirebaseDatabase.getInstance().getReference().child("Follow").child(profileid)
-                            .child("followers").child(Server.Auth.getUid()).setValue(true);
+        edit_profile.setOnClickListener(v -> {
+            String btn = edit_profile.getText().toString();
+            if (btn.equals("Edit Profile")) {
+                startActivity(new Intent(getContext(), EditProfileActivity.class));
+            } else if (btn.equals("follow")) {
+                Server.Database.follow(Server.Auth.getUid(), profileid,true);
 
-                    addNotifications();
+                addNotifications();
 
-                } else if (btn.equals("following")) {
-                    FirebaseDatabase.getInstance().getReference().child("Follow").child(Server.Auth.getUid())
-                            .child("following").child(profileid).removeValue();
-                    FirebaseDatabase.getInstance().getReference().child("Follow").child(profileid)
-                            .child("followers").child(Server.Auth.getUid()).removeValue();
-                }
+            } else if (btn.equals("following")) {
+                Server.Database.follow(Server.Auth.getUid(), profileid,false);
+
             }
         });
 
-        options.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getContext(), OptionsActivity.class);
-                startActivity(intent);
-            }
+        options.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), OptionsActivity.class);
+            startActivity(intent);
         });
 
-        my_fotos.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                recyclerView.setVisibility(View.VISIBLE);
-                recyclerView_saves.setVisibility(View.GONE);
-            }
+        my_fotos.setOnClickListener(v -> {
+            recyclerView.setVisibility(View.VISIBLE);
+            recyclerView_saves.setVisibility(View.GONE);
         });
 
-        saved_fotos.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                recyclerView.setVisibility(View.GONE);
-                recyclerView_saves.setVisibility(View.VISIBLE);
-            }
+        saved_fotos.setOnClickListener(v -> {
+            recyclerView.setVisibility(View.GONE);
+            recyclerView_saves.setVisibility(View.VISIBLE);
         });
 
-        followers.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent=new Intent(getContext(), FollowersActivity.class);
-                intent.putExtra("id",profileid);
-                intent.putExtra("title","followers");
-                startActivity(intent);
-            }
+        followers.setOnClickListener(v -> {
+            Intent intent=new Intent(getContext(), FollowersActivity.class);
+            intent.putExtra("id",profileid);
+            intent.putExtra("title","followers");
+            startActivity(intent);
         });
-        following.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent=new Intent(getContext(), FollowersActivity.class);
-                intent.putExtra("id",profileid);
-                intent.putExtra("title","following");
-                startActivity(intent);
-            }
+        following.setOnClickListener(v -> {
+            Intent intent=new Intent(getContext(), FollowersActivity.class);
+            intent.putExtra("id",profileid);
+            intent.putExtra("title","following");
+            startActivity(intent);
         });
 
         return view;
     }
 
     private void addNotifications() {
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Notifications").child(profileid);
 
-        HashMap<String, Object> hashMap = new HashMap<>();
-        hashMap.put("userid", Server.Auth.getUid());
-        hashMap.put("text", "started following you");
-        hashMap.put("postid", "");
-        hashMap.put("ispost", false);
-
-        reference.push().setValue(hashMap);
+        Notification notification = new Notification(Server.Auth.getUid(), "started following you", "", false);
+        Server.Database.addNotification(profileid,notification,aVoid -> {},e -> {});
     }
 
     private void userInfo()
     {
-        DatabaseReference reference=FirebaseDatabase.getInstance().getReference("Users").child(profileid);
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(getContext()==null)
-                {
-                    return;
-                }
-                User user =dataSnapshot.getValue(User.class);
-                Glide.with(getContext()).load(user.getImageurl()).into(image_profile);
-                username.setText(user.getUsername());
-                fullname.setText(user.getFullname());
-                bio.setText(user.getBio());
-
+        Server.Database.getUser(profileid,user -> {
+            if(getContext()==null)
+            {
+                return;
             }
+            Glide.with(getContext()).load(user.getImageurl()).into(image_profile);
+            username.setText(user.getUsername());
+            fullname.setText(user.getFullname());
+            bio.setText(user.getBio());
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+        },e -> {});
     }
     private void checkFollow()
     {
-        DatabaseReference reference=FirebaseDatabase.getInstance().getReference()
-                .child("Follow").child(Server.Auth.getUid()).child("following");
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.child(profileid).exists())
-                {
-                    edit_profile.setText("following");
-                }
-                else
-                {
-                    edit_profile.setText("follow");
-                }
+        Server.Database.isFollowing(Server.Auth.getUid(),profileid,aBoolean -> {
+            if(aBoolean){
+                edit_profile.setText("following");
+            }else {
+                edit_profile.setText("follow");
             }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
+        },e -> {});
     }
     private void getFollowers(){
-        DatabaseReference reference=FirebaseDatabase.getInstance().getReference()
-                .child("Follow").child(profileid).child("followers");
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                followers.setText(""+dataSnapshot.getChildrenCount());
-            }
+        Server.Database.getFollow(profileid,true,strings ->
+                followers.setText(""+strings.size()), e -> {});
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+        Server.Database.getFollow(profileid,false,strings ->
+                following.setText(""+strings.size()), e -> {});
 
-            }
-        });
-
-        DatabaseReference reference1=FirebaseDatabase.getInstance().getReference()
-                .child("Follow").child(profileid).child("following");
-        reference1.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                following.setText(""+dataSnapshot.getChildrenCount());
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
     }
     private void getNrPosts(){
-        DatabaseReference reference=FirebaseDatabase.getInstance().getReference("Posts");
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                int i=0;
-                for(DataSnapshot snapshot:dataSnapshot.getChildren())
-                {
-                    Post post=snapshot.getValue(Post.class);
-                    if(post.getPublisher().equals(profileid))
-                    {
-                        i++;
-                    }
-                }
-
-                posts.setText(""+i);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+        Server.Database.getAllPosts(profileid,posts1 -> {posts.setText(""+posts1.size());},e -> {});
     }
 
     private void myFotos(){
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Posts");
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                postList.clear();
-                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    Post post = snapshot.getValue(Post.class);
-                    if(post.getPublisher().equals(profileid)){
-                        postList.add(post);
-                    }
-                }
-                Collections.reverse(postList);
-                myFotoAdapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+        Server.Database.getAllPosts(profileid,posts1 -> {
+            postList.clear();
+            postList.addAll(posts1);
+            Collections.reverse(postList);
+            myFotoAdapter.notifyDataSetChanged();},e -> {});
     }
+
     private void mysaves(){
         mySaves=new ArrayList<>();
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Saves")
-                .child(Server.Auth.getUid());
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    mySaves.add(snapshot.getKey());
-                }
 
-                readSaves();
-            }
+        Server.Database.getAllSaves(Server.Auth.getUid(),posts1 -> {
+            mySaves.addAll(posts1);
+        },e -> {});
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-    private void readSaves(){
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Posts");
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                postList_saves.clear();
-                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    Post post = snapshot.getValue(Post.class);
-
-                    for (String id : mySaves){
-                        if(post.getPostid().equals(id)){
-                            postList_saves.add(post);
-                        }
+        Server.Database.getAllPostsFromAllUsers(posts1 -> {
+            postList_saves.clear();
+            for (Post post:posts1){
+                for(String save:mySaves){
+                    if(post.getPostid().equals(save)){
+                        postList_saves.add(post);
                     }
                 }
-                myFotoAdapter_saves.notifyDataSetChanged();
             }
+            myFotoAdapter_saves.notifyDataSetChanged();
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+        },e -> {});
     }
 }

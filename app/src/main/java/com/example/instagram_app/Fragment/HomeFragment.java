@@ -1,31 +1,19 @@
 package com.example.instagram_app.Fragment;
 
-import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.instagram_app.Adapter.PostAdapter;
 import com.example.instagram_app.Controller.Server;
 import com.example.instagram_app.Model.Post;
 import com.example.instagram_app.R;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,59 +52,30 @@ public class HomeFragment extends Fragment {
 
     private void checkFollowing(){
         followingList = new ArrayList<>();
-
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Follow")
-                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                .child("following");
-
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                followingList.clear();
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    followingList.add(snapshot.getKey());
-                }
-
-                readPosts();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+        Server.Database.getFollow(Server.Auth.getUid(),false,strings -> {
+            followingList.clear();
+            followingList.addAll(strings);
+            readPosts();
+        },e -> {});
     }
 
     private void readPosts(){
-        final FirebaseUser firebaseUser= FirebaseAuth.getInstance().getCurrentUser();;
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Posts");
 
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                postLists.clear();
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    Post post=snapshot.getValue(Post.class);
-                    if(post.getPublisher().equals(Server.Auth.getUid()))
-                    {
+        Server.Database.getAllPostsFromAllUsers(posts -> {
+            postLists.clear();
+            for(Post post:posts)
+            {
+                if(post.getPublisher().equals(Server.Auth.getUid())){
+                    postLists.add(post);
+                }
+                for(String id:followingList){
+                    if(post.getPublisher().equals(id)){
                         postLists.add(post);
-
-                    }
-                    for(String id:followingList){
-                        if(post.getPublisher().equals(id)){
-                            postLists.add(post);
-                        }
                     }
                 }
-
                 postAdapter.notifyDataSetChanged();
                 progressBar.setVisibility(View.GONE);
             }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+        },e -> {});
     }
 }
