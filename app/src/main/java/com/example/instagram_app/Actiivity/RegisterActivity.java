@@ -1,4 +1,4 @@
-package com.example.instagram_app;
+package com.example.instagram_app.Actiivity;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.instagram_app.Controller.*;
+import com.example.instagram_app.R;
 
 
 import java.util.Optional;

@@ -1,26 +1,17 @@
-package com.example.instagram_app;
+package com.example.instagram_app.Actiivity;
 
-import androidx.annotation.NonNull;
-import androidx.fragment.app.FragmentActivity;
-
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 
-import com.bumptech.glide.Glide;
-import com.example.instagram_app.Model.Post;
+import androidx.fragment.app.FragmentActivity;
+
+import com.example.instagram_app.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -34,17 +25,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
-
-
     }
-
 
     /**
      * Manipulates the map once available.
@@ -62,9 +48,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         gpsLongitude=intent.getStringExtra("gpsLongitude");
         gpsLatitude=intent.getStringExtra("gpsLatitude");
-        Log.v("TAG22", String.valueOf(gpsLongitude));
-        Log.v("TAG22", String.valueOf(gpsLatitude));
-
 
         try {
             gpsLongitudenum = Double.parseDouble(gpsLongitude);
@@ -77,9 +60,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         } catch(NumberFormatException nfe) {
             System.out.println("Could not parse " + nfe);
         }
-
-        Log.v("TAG22", String.valueOf(gpsLongitudenum));
-        Log.v("TAG22", String.valueOf(gpsLatitudenum));
 
         mMap = googleMap;
 

@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.instagram_app.Controller.Server;
-import com.example.instagram_app.MainActivity;
+import com.example.instagram_app.Actiivity.MainActivity;
 import com.example.instagram_app.Model.Comment;
 import com.example.instagram_app.R;
 

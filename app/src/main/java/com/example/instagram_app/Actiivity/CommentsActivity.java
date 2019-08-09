@@ -1,4 +1,4 @@
-package com.example.instagram_app;
+package com.example.instagram_app.Actiivity;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -17,6 +17,7 @@ import com.example.instagram_app.Adapter.CommentAdapter;
 import com.example.instagram_app.Controller.Server;
 import com.example.instagram_app.Model.Comment;
 import com.example.instagram_app.Model.Notification;
+import com.example.instagram_app.R;
 
 public class CommentsActivity extends AppCompatActivity {
 
@@ -77,9 +78,7 @@ public class CommentsActivity extends AppCompatActivity {
                 comment -> {
                     addNotifications(comment);
                     addcomment.setText("");
-                }, e -> {
-                    //TODO
-                });
+                }, e -> {});
 
     }
 
@@ -89,13 +88,8 @@ public class CommentsActivity extends AppCompatActivity {
                 "commented: "+comment.getComment(),
                 postid,true);
 
-
         Server.Database.addNotification(publisherPostId, notification,
-                aVoid -> {
-
-                }, e -> {
-
-                });
+                aVoid -> {}, e -> {});
     }
 
     private void getImage(){

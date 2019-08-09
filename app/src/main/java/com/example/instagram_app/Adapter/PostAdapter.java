@@ -20,9 +20,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.example.instagram_app.CommentsActivity;
+import com.example.instagram_app.Actiivity.CommentsActivity;
 import com.example.instagram_app.Controller.Server;
-import com.example.instagram_app.FollowersActivity;
+import com.example.instagram_app.Actiivity.FollowersActivity;
 import com.example.instagram_app.Fragment.PostDetailFragment;
 import com.example.instagram_app.Fragment.ProfileFragment;
 import com.example.instagram_app.Model.Notification;
@@ -258,7 +258,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
     }
     private void nrLikes(final TextView likes, String postId){
 
-        Server.Database.getNumOfLikes(postId,integer -> likes.setText(integer+" likes"),e -> {});
+        Server.Database.getLikes(postId, strings -> likes.setText(strings.size()+" likes"), e -> {});
 
     }
 

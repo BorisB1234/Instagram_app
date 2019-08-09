@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.instagram_app.Adapter.PostAdapter;
 import com.example.instagram_app.Controller.Server;
-import com.example.instagram_app.MapsActivity;
+import com.example.instagram_app.Actiivity.MapsActivity;
 import com.example.instagram_app.Model.Post;
 import com.example.instagram_app.R;
 

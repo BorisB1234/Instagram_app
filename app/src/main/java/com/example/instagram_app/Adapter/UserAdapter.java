@@ -16,19 +16,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.instagram_app.Controller.Server;
 import com.example.instagram_app.Fragment.ProfileFragment;
-import com.example.instagram_app.MainActivity;
+import com.example.instagram_app.Actiivity.MainActivity;
 import com.example.instagram_app.Model.Notification;
 import com.example.instagram_app.Model.User;
 import com.example.instagram_app.R;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-//import com.google.firebase.database.DataSnapshot;
-//import com.google.firebase.database.DatabaseError;
-//import com.google.firebase.database.DatabaseReference;
-//import com.google.firebase.database.FirebaseDatabase;
-//import com.google.firebase.database.ValueEventListener;
 
-import java.util.HashMap;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -39,14 +31,11 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder>{
     private List<User> mUsers;
     private boolean isfragment;
 
-//    private FirebaseUser firebaseUser;
-
     public UserAdapter(Context mContext, List<User> mUsers,boolean isfragment) {
         this.mContext = mContext;
         this.mUsers = mUsers;
         this.isfragment=isfragment;
     }
-
 
     @NonNull
     @Override
@@ -57,8 +46,6 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder>{
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
-
-//        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         final User user = mUsers.get(position);
         holder.btn_follow.setVisibility(View.VISIBLE);
         holder.username.setText(user.getUsername());

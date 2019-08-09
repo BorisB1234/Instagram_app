@@ -1,7 +1,9 @@
 package com.example.instagram_app.Controller;
 
+import android.content.ContentResolver;
 import android.content.Context;
-import android.util.Log;
+import android.net.Uri;
+import android.webkit.MimeTypeMap;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -14,6 +16,8 @@ import com.example.instagram_app.Model.Notification;
 import com.example.instagram_app.Model.Post;
 import com.example.instagram_app.Model.User;
 import com.example.instagram_app.R;
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -21,6 +25,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.StorageTask;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,7 +46,8 @@ public class Server {
         private static DatabaseReference PostsRef = databaseRef.child("Posts");
         private static DatabaseReference LikesRef = databaseRef.child("Likes");
         private static DatabaseReference FollowRef = databaseRef.child("Follow");
-
+        private static StorageTask uploadTask;
+        private static StorageReference storageRef= FirebaseStorage.getInstance().getReference("uploads");
 
         public static void addUser(final User user,final Consumer<Void> onComplete,
                                    final Consumer<Optional<Exception>> onFailed){
@@ -57,7 +64,7 @@ public class Server {
 
         public static void getUser(String uid,final Consumer<User> onComplete,
                                    final Consumer<Optional<Exception>> onFailed){
-            UserRef.child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
+            UserRef.child(uid).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     User user = dataSnapshot.getValue(User.class);
@@ -236,13 +243,18 @@ public class Server {
         }
 
 
-        public static void getNumOfLikes(String postId, final Consumer<Integer> onComplete,
-                                         final Consumer<Optional<Exception>> onFailed) {
+        public static void getLikes(String postId, final Consumer<List<String>> onComplete,
+                                    final Consumer<Optional<Exception>> onFailed) {
+            List<String>list=new ArrayList<>();
             LikesRef.child(postId).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                    onComplete.accept((int) dataSnapshot.getChildrenCount());
+                    list.clear();
+                    for(DataSnapshot snapshot: dataSnapshot.getChildren())
+                    {
+                        list.add(snapshot.getKey());
+                    }
+                    onComplete.accept(list);
                 }
 
                 @Override
@@ -512,6 +524,23 @@ public class Server {
             });
 
         }
+
+        public static void updateUser(String uid, HashMap<String, Object> map,final Consumer<Void> onComplete,
+                                      final Consumer<Optional<Exception>> onFailed) {
+            UserRef.child(uid).updateChildren(map);
+            onComplete.accept(null);
+        }
+
+        public static void publishPost(String myUrl, String description, String uid, String gpsLatitude, String gpsLongitude) {
+
+            DatabaseReference reference = PostsRef;
+            String postid = reference.push().getKey();
+            Post post=new Post(postid,myUrl,description,uid,gpsLatitude,gpsLongitude);
+
+            reference.child(postid).setValue(post);
+
+        }
+
     }
 
     public static class Auth{
@@ -561,10 +590,48 @@ public class Server {
 
 
     public static class Storage{
-        private static FirebaseStorage storage = FirebaseStorage.getInstance();
+        private static StorageTask uploadTask;
+        private static StorageReference storagePostRef= FirebaseStorage.getInstance().getReference("posts");
+        private static StorageReference storageProfileRef= FirebaseStorage.getInstance().getReference("profile_photos");
 
-        public void uploadImage(String imageURI){
+        public static void uploadImage(Uri mImageUri, ContentResolver cR,Boolean post, final Consumer<String> onComplete,
+                                       final Consumer<Optional<Exception>> onFailed) {
+            if (mImageUri != null){
+                final StorageReference fileReference;
+                if(post) {
+                    fileReference = storagePostRef.child(System.currentTimeMillis()
+                            + "." + getFileExtension(mImageUri, cR));
+                }else {
+                    fileReference = storageProfileRef.child(System.currentTimeMillis()
+                            + "." + getFileExtension(mImageUri, cR));
+                }
 
+                uploadTask = fileReference.putFile(mImageUri);
+                uploadTask.continueWithTask((Continuation) task -> {
+                    if (!task.isSuccessful()) {
+                        throw task.getException();
+                    }
+                    return fileReference.getDownloadUrl();
+                }).addOnCompleteListener((OnCompleteListener<Uri>) task -> {
+                    if (task.isSuccessful()) {
+                        Uri downloadUri = task.getResult();
+                        String miUrlOk = downloadUri.toString();
+
+                        onComplete.accept(miUrlOk);
+                    } else {
+                        onComplete.accept("Failed");
+                    }
+                }).addOnFailureListener(e -> onFailed.accept(Optional.ofNullable(
+                        e)));
+
+            } else {
+                onComplete.accept("No image selected");
+            }
+
+        }
+        private static String getFileExtension(Uri uri, ContentResolver cR){
+            MimeTypeMap mime = MimeTypeMap.getSingleton();
+            return mime.getExtensionFromMimeType(cR.getType(uri));
         }
 
     }
