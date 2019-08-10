@@ -119,13 +119,11 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder>{
 
     private void isFollowing(final String userid, final Button button)
     {
-
          Server.Database.isFollowing(Server.Auth.getUid(),userid,aBoolean -> {
              if(aBoolean)
                  button.setText("following");
              else
                  button.setText("follow");
          },e -> {});
-
     }
 }

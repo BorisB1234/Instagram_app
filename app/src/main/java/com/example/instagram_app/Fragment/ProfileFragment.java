@@ -153,7 +153,6 @@ public class ProfileFragment extends Fragment {
     }
 
     private void addNotifications() {
-
         Notification notification = new Notification(Server.Auth.getUid(), "started following you", "", false);
         Server.Database.addNotification(profileid,notification,aVoid -> {},e -> {});
     }
@@ -205,9 +204,7 @@ public class ProfileFragment extends Fragment {
     private void mysaves(){
         mySaves=new ArrayList<>();
 
-        Server.Database.getAllSaves(Server.Auth.getUid(),posts1 -> {
-            mySaves.addAll(posts1);
-        },e -> {});
+        Server.Database.getAllSaves(Server.Auth.getUid(),posts1 -> mySaves.addAll(posts1), e -> {});
 
         Server.Database.getAllPostsFromAllUsers(posts1 -> {
             postList_saves.clear();

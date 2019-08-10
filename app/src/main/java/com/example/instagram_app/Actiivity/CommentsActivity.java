@@ -53,7 +53,6 @@ public class CommentsActivity extends AppCompatActivity {
         commentAdapter = new CommentAdapter(this, postid);
         recyclerView.setAdapter(commentAdapter);
 
-
         addcomment = findViewById(R.id.add_comment);
         image_profile = findViewById(R.id.image_profile);
         post = findViewById(R.id.post);
@@ -68,7 +67,6 @@ public class CommentsActivity extends AppCompatActivity {
 
         getImage();
         readComments();
-
     }
 
     private void addcomment(){
@@ -79,7 +77,6 @@ public class CommentsActivity extends AppCompatActivity {
                     addNotifications(comment);
                     addcomment.setText("");
                 }, e -> {});
-
     }
 
     private void addNotifications(final Comment comment) {

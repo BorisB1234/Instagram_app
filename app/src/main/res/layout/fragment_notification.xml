@@ -40,5 +40,4 @@
         android:id="@+id/recycler_view"
         android:layout_below="@+id/bar"/>
 
-
 </RelativeLayout>

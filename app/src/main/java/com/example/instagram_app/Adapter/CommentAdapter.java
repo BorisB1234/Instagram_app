@@ -28,9 +28,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
     final private List<Comment> mComment;
     final private String postid;
 
-
     public CommentAdapter(final Context mContext,final String postid) {
-
         this.mContext = mContext;
         this.mComment = new ArrayList<>();
         this.postid = postid;
@@ -76,7 +74,6 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
             Glide.with(mContext).load(imageURL).into(image_profile);
             this.comment.setText(comment.getComment());
 
-
             this.comment.setOnClickListener(v -> {
                 Intent intent = new Intent(mContext, MainActivity.class);
                 intent.putExtra("publisherid", comment.getPublisher());
@@ -107,7 +104,6 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
                 }
                 return true;
             });
-
         }
     }
 

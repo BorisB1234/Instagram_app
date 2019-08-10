@@ -13,7 +13,6 @@ public class Notification implements Serializable {
     private String userid;
 
     private String text;
-
     private String postid;
     private boolean ispost;
 

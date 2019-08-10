@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".Actiivity.MainActivity">
 
-
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -28,8 +27,5 @@
             android:background="?android:attr/windowBackground"
             app:menu="@menu/bottom_navigation"/>
 
-
     </com.google.android.material.appbar.AppBarLayout>
-
-
 </RelativeLayout>

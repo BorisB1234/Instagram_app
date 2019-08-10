@@ -78,7 +78,6 @@ public class SearchFragment extends Fragment {
                 mUsers.addAll(users);
                 userAdapter.notifyDataSetChanged();
             }
-
         },e -> {});
     }
 }

@@ -15,12 +15,10 @@ public class Comment implements Serializable {
     @NonNull
     private String commentid;
 
-
     public Comment(String comment, String publisher, String commentid) {
         this.comment = comment;
         this.publisher = publisher;
         this.commentid = commentid;
-
     }
 
     public Comment() {

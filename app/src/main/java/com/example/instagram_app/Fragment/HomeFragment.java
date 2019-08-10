@@ -24,7 +24,6 @@ public class HomeFragment extends Fragment {
     private RecyclerView recyclerView;
     private PostAdapter postAdapter;
     private List<Post> postLists;
-
     private List<String> followingList;
 
     ProgressBar progressBar;

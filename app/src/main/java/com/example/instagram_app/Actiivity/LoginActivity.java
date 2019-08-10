@@ -22,7 +22,6 @@ public class LoginActivity extends AppCompatActivity {
     Button login;
     TextView txt_signup;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,7 +31,6 @@ public class LoginActivity extends AppCompatActivity {
         password=findViewById(R.id.password);
         login=findViewById(R.id.login);
         txt_signup=findViewById(R.id.txt_signup);
-
 
         txt_signup.setOnClickListener(v -> startActivity(new Intent(LoginActivity.this,RegisterActivity.class)));
         login.setOnClickListener(v -> {
@@ -62,10 +60,7 @@ public class LoginActivity extends AppCompatActivity {
                     pd.dismiss();
                     Toast.makeText(LoginActivity.this,"Authentication Failed!",Toast.LENGTH_SHORT).show();
                 });
-
             }
-
         });
-
     }
 }

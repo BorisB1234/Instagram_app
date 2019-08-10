@@ -46,8 +46,6 @@ public class Server {
         private static DatabaseReference PostsRef = databaseRef.child("Posts");
         private static DatabaseReference LikesRef = databaseRef.child("Likes");
         private static DatabaseReference FollowRef = databaseRef.child("Follow");
-        private static StorageTask uploadTask;
-        private static StorageReference storageRef= FirebaseStorage.getInstance().getReference("uploads");
 
         public static void addUser(final User user,final Consumer<Void> onComplete,
                                    final Consumer<Optional<Exception>> onFailed){

@@ -22,7 +22,6 @@ import com.example.instagram_app.R;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class PostDetailFragment extends Fragment {
 
     String postid;

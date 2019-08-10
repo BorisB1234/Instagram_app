@@ -38,7 +38,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
     public Context mContext;
     public List<Post> mPost;
 
-
     public PostAdapter(Context mContext, List<Post> mPost) {
         this.mContext = mContext;
         this.mPost = mPost;
@@ -53,7 +52,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder viewHolder, int i) {
-
 
         final Post post = mPost.get(i);
 
@@ -177,9 +175,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
                             },e -> {});
 
                         return true;
-                    case R.id.report:
-                        Toast.makeText(mContext, "Reported clicked!", Toast.LENGTH_SHORT).show();
-                        return true;
+
                     default:
                         return false;
                 }
@@ -231,7 +227,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
 
     private void isLiked(String postid, final ImageView imageView){
 
-
         Server.Database.isLiked(postid, Server.Auth.getUid(), isLiked -> {
             if (isLiked){
                 imageView.setImageResource(R.drawable.ic_liked);
@@ -241,9 +236,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
                 imageView.setTag("like");
             }
         }, e -> {
-
         });
-
     }
 
     private void addNotifications(String userid,String postid){

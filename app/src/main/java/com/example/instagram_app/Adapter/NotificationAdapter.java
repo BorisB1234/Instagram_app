@@ -23,7 +23,6 @@ import java.util.List;
 
 public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.ViewHolder> {
 
-
     private Context mContext;
     private List<Notification> mNotification;
 
@@ -105,7 +104,6 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         }, e -> {
 
         });
-
     }
     private void getPostImage(final ImageView imageView, String postid){
         Server.Database.getPost(postid,
