@@ -1,13 +1,10 @@
 package com.example.instagram_app.Adapter;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -19,45 +16,27 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.example.instagram_app.CommentsActivity;
+import com.example.instagram_app.Actiivity.CommentsActivity;
 import com.example.instagram_app.Controller.Server;
-import com.example.instagram_app.FollowersActivity;
-import com.example.instagram_app.Fragment.HomeFragment;
+import com.example.instagram_app.Actiivity.FollowersActivity;
 import com.example.instagram_app.Fragment.PostDetailFragment;
 import com.example.instagram_app.Fragment.ProfileFragment;
-import com.example.instagram_app.MainActivity;
 import com.example.instagram_app.Model.Notification;
 import com.example.instagram_app.Model.Post;
-import com.example.instagram_app.Model.User;
-import com.example.instagram_app.OptionsActivity;
-import com.example.instagram_app.PostActivity;
 import com.example.instagram_app.R;
-import com.example.instagram_app.StartActivity;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.HashMap;
 import java.util.List;
-import static androidx.core.content.ContextCompat.startActivity;
-import com.example.instagram_app.PostActivity;
+
+
 public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
 
     public Context mContext;
     public List<Post> mPost;
-
-    private FirebaseUser firebaseUser;
 
     public PostAdapter(Context mContext, List<Post> mPost) {
         this.mContext = mContext;
@@ -74,12 +53,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder viewHolder, int i) {
 
-        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         final Post post = mPost.get(i);
-//        if (post==null) return;
-        System.out.println("vvv\t"+i+"\t"+post+"\t"+mPost.size()+"\t"+mPost);
-
-
 
         Glide.with(mContext).load(post.getPostimage())
                 .apply(new RequestOptions().placeholder(R.drawable.placeholder))
@@ -98,163 +72,120 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
         getComments(post.getPostid(), viewHolder.comments);
         isSaved(post.getPostid(), viewHolder.save);
 
-        viewHolder.image_profile.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                SharedPreferences.Editor editor = mContext.getSharedPreferences("PREFS",Context.MODE_PRIVATE).edit();
-                editor.putString("profileid",post.getPublisher());
-                editor.apply();
+        viewHolder.image_profile.setOnClickListener(v -> {
+            SharedPreferences.Editor editor = mContext.getSharedPreferences("PREFS",Context.MODE_PRIVATE).edit();
+            editor.putString("profileid",post.getPublisher());
+            editor.apply();
 
-                ((FragmentActivity)mContext).getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                        new ProfileFragment()).commit();
+            ((FragmentActivity)mContext).getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                    new ProfileFragment()).commit();
+        });
+
+        viewHolder.username.setOnClickListener(v -> {
+            SharedPreferences.Editor editor = mContext.getSharedPreferences("PREFS",Context.MODE_PRIVATE).edit();
+            editor.putString("profileid",post.getPublisher());
+            editor.apply();
+
+            ((FragmentActivity)mContext).getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                    new ProfileFragment()).commit();
+        });
+
+        viewHolder.publisher.setOnClickListener(v -> {
+            SharedPreferences.Editor editor = mContext.getSharedPreferences("PREFS",Context.MODE_PRIVATE).edit();
+            editor.putString("profileid",post.getPublisher());
+            editor.apply();
+
+            ((FragmentActivity)mContext).getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                    new ProfileFragment()).commit();
+        });
+
+        viewHolder.post_image.setOnClickListener(v -> {
+            SharedPreferences.Editor editor = mContext.getSharedPreferences("PREFS",Context.MODE_PRIVATE).edit();
+            editor.putString("postid",post.getPostid());
+            editor.apply();
+
+            ((FragmentActivity)mContext).getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                    new PostDetailFragment()).commit();
+        });
+
+        viewHolder.save.setOnClickListener(v -> {
+            if(viewHolder.save.getTag().equals("save")){
+                Server.Database.savePost(Server.Auth.getUid(),post.getPostid(),
+                        aVoid -> {Toast.makeText(mContext, "Post saved", Toast.LENGTH_SHORT).show();},e -> {});
+
+            }else {
+
+                Server.Database.removeSavedPost(Server.Auth.getUid(),post.getPostid(),aVoid -> {Toast.makeText(mContext, "Post removed", Toast.LENGTH_SHORT).show();},e -> {});
             }
         });
 
-        viewHolder.username.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                SharedPreferences.Editor editor = mContext.getSharedPreferences("PREFS",Context.MODE_PRIVATE).edit();
-                editor.putString("profileid",post.getPublisher());
-                editor.apply();
+        viewHolder.like.setOnClickListener(view -> {
+            if(viewHolder.like.getTag().equals("like")){
 
-                ((FragmentActivity)mContext).getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                        new ProfileFragment()).commit();
+                Server.Database.addLike(Server.Auth.getUid(),post.getPostid(),
+                        aVoid -> {Toast.makeText(mContext, "Post liked", Toast.LENGTH_SHORT).show();},e -> {});
+
+                addNotifications(post.getPublisher(),post.getPostid());
+            }else {
+                Server.Database.removeLike(Server.Auth.getUid(),post.getPostid(),
+                        aVoid -> {Toast.makeText(mContext, "Like removed", Toast.LENGTH_SHORT).show();},e -> {});
+
             }
         });
 
-        viewHolder.publisher.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                SharedPreferences.Editor editor = mContext.getSharedPreferences("PREFS",Context.MODE_PRIVATE).edit();
-                editor.putString("profileid",post.getPublisher());
-                editor.apply();
-
-                ((FragmentActivity)mContext).getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                        new ProfileFragment()).commit();
-            }
+        viewHolder.comment.setOnClickListener(v -> {
+            Intent intent = new Intent (mContext, CommentsActivity.class);
+            intent.putExtra("postid", post.getPostid());
+            intent.putExtra("publisherid", post.getPublisher());
+            mContext.startActivity(intent);
         });
 
-        viewHolder.post_image.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                SharedPreferences.Editor editor = mContext.getSharedPreferences("PREFS",Context.MODE_PRIVATE).edit();
-                editor.putString("postid",post.getPostid());
-                editor.apply();
-
-                ((FragmentActivity)mContext).getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                        new PostDetailFragment()).commit();
-            }
+        viewHolder.comments.setOnClickListener(v -> {
+            Intent intent = new Intent (mContext, CommentsActivity.class);
+            intent.putExtra("postid", post.getPostid());
+            intent.putExtra("publisherid", post.getPublisher());
+            mContext.startActivity(intent);
         });
 
-        viewHolder.save.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(viewHolder.save.getTag().equals("save")){
-                    FirebaseDatabase.getInstance().getReference().child("Saves").child(Server.Auth.getUid())
-                            .child(post.getPostid()).setValue(true);
-                }else {
-                    FirebaseDatabase.getInstance().getReference().child("Saves").child(Server.Auth.getUid())
-                            .child(post.getPostid()).removeValue();
+        viewHolder.likes.setOnClickListener(v -> {
+
+            Intent intent=new Intent(mContext, FollowersActivity.class);
+            intent.putExtra("id",post.getPostid());
+            intent.putExtra("title","likes");
+            mContext.startActivity(intent);
+        });
+
+        viewHolder.more.setOnClickListener(view -> {
+            PopupMenu popupMenu = new PopupMenu(mContext, view);
+            popupMenu.setOnMenuItemClickListener(menuItem -> {
+                switch (menuItem.getItemId()){
+                    case R.id.edit:
+                        editPost(post.getPostid());
+                        return true;
+                    case R.id.delete:
+
+                        ((FragmentActivity)mContext).getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                                new ProfileFragment()).commit();
+
+                        Server.Database.removePost(post.getPostid(),
+                                aVoid -> {
+                                    deleteNotifications(post.getPostid(), Server.Auth.getUid());
+                                    mPost.remove(post);
+                                    notifyDataSetChanged();
+                            },e -> {});
+
+                        return true;
+
+                    default:
+                        return false;
                 }
+            });
+            popupMenu.inflate(R.menu.post_menu);
+            if (!post.getPublisher().equals(Server.Auth.getUid())){
+                popupMenu.getMenu().findItem(R.id.edit).setVisible(false);
+                popupMenu.getMenu().findItem(R.id.delete).setVisible(false);
             }
-        });
-
-        viewHolder.like.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(viewHolder.like.getTag().equals("like")){
-                    FirebaseDatabase.getInstance().getReference().child("Likes").child(post.getPostid())
-                            .child(Server.Auth.getUid()).setValue(true);
-                    addNotifications(post.getPublisher(),post.getPostid());
-                }else {
-                    FirebaseDatabase.getInstance().getReference().child("Likes").child(post.getPostid())
-                            .child(Server.Auth.getUid()).removeValue();
-                }
-            }
-        });
-
-        viewHolder.comment.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent (mContext, CommentsActivity.class);
-                intent.putExtra("postid", post.getPostid());
-                intent.putExtra("publisherid", post.getPublisher());
-                mContext.startActivity(intent);
-            }
-        });
-
-        viewHolder.comments.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent (mContext, CommentsActivity.class);
-                intent.putExtra("postid", post.getPostid());
-                intent.putExtra("publisherid", post.getPublisher());
-                mContext.startActivity(intent);
-            }
-        });
-
-        viewHolder.likes.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                Intent intent=new Intent(mContext, FollowersActivity.class);
-                intent.putExtra("id",post.getPostid());
-                intent.putExtra("title","likes");
-                mContext.startActivity(intent);
-            }
-        });
-
-        viewHolder.more.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                PopupMenu popupMenu = new PopupMenu(mContext, view);
-                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem menuItem) {
-                        switch (menuItem.getItemId()){
-                            case R.id.edit:
-                                editPost(post.getPostid());
-                                return true;
-                            case R.id.delete:
-                                final String id = post.getPostid();
-                                //((PostActivity) mContext).closeAfterDelete();
-                                //Intent intent = new Intent(mContext, MainActivity.class);
-                                //mContext.startActivity(intent);
-
-                                //((Activity)mContext).finish();
-                                ((FragmentActivity)mContext).getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                                        new ProfileFragment()).commit();
-
-                                FirebaseDatabase.getInstance().getReference("Posts")
-                                        .child(post.getPostid()).removeValue()
-                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<Void> task) {
-                                                if (task.isSuccessful()){
-                                                    deleteNotifications(id, Server.Auth.getUid());
-                                                    mPost.remove(post);
-                                                    notifyDataSetChanged();
-                                                }else {
-
-                                                }
-                                            }
-                                        });
-                                return true;
-                            case R.id.report:
-                                Toast.makeText(mContext, "Reported clicked!", Toast.LENGTH_SHORT).show();
-                                return true;
-                            default:
-                                return false;
-                        }
-                    }
-                });
-                popupMenu.inflate(R.menu.post_menu);
-                if (!post.getPublisher().equals(Server.Auth.getUid())){
-                    popupMenu.getMenu().findItem(R.id.edit).setVisible(false);
-                    popupMenu.getMenu().findItem(R.id.delete).setVisible(false);
-                }
-                popupMenu.show();
-            }
+            popupMenu.show();
         });
 
     }
@@ -287,141 +218,52 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
         }
     }
 
-    private void getComments(String postid, final TextView comments){
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("Comments").child(postid);
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                comments.setText("View All "+dataSnapshot.getChildrenCount() + " Comments");
-            }
+    private void getComments(String postid, final TextView txtcomments){
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+        Server.Database.getAllComments(postid,
+                comments -> txtcomments.setText("View All " + comments.size() + " Comments"), e -> {});
 
-            }
-        });
     }
 
     private void isLiked(String postid, final ImageView imageView){
-        final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference()
-                .child("Likes")
-                .child(postid);
-
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.child(Server.Auth.getUid()).exists()){
-                    imageView.setImageResource(R.drawable.ic_liked);
-                    imageView.setTag("liked");
-                }else {
-                    imageView.setImageResource(R.drawable.ic_like);
-                    imageView.setTag("like");
-                }
+        Server.Database.isLiked(postid, Server.Auth.getUid(), isLiked -> {
+            if (isLiked){
+                imageView.setImageResource(R.drawable.ic_liked);
+                imageView.setTag("liked");
+            }else {
+                imageView.setImageResource(R.drawable.ic_like);
+                imageView.setTag("like");
             }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
+        }, e -> {
         });
     }
 
     private void addNotifications(String userid,String postid){
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Notifications").child(userid);
 
-        HashMap<String,Object> hashMap = new HashMap<>();
-        hashMap.put("userid",Server.Auth.getUid());
-        hashMap.put("text","liked your post");
-        hashMap.put("postid",postid);
-        hashMap.put("ispost",true);
+        Notification notification = new Notification(Server.Auth.getUid(),"liked your post",postid,true);
+        Server.Database.addNotification(userid,notification,aVoid -> {},e -> {});
 
-        reference.push().setValue(hashMap);
     }
     private void deleteNotifications(final String postid, String userid){
-        System.out.println("postid="+postid);
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Notifications").child(userid);
-        reference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    Notification notification = snapshot.getValue(Notification.class);
-                    System.out.println(notification);
-                    if (notification.getPostid().equals(postid)){
-                        snapshot.getRef().removeValue()
-                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        Toast.makeText(mContext, "Deleted!", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
+        Server.Database.deleteNotifications(postid, userid,
+                aVoid -> Toast.makeText(mContext, "Deleted!", Toast.LENGTH_SHORT).show(), e -> {});
     }
     private void nrLikes(final TextView likes, String postId){
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("Likes").child(postId);
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                likes.setText(dataSnapshot.getChildrenCount()+" likes");
-            }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
+        Server.Database.getLikes(postId, strings -> likes.setText(strings.size()+" likes"), e -> {});
 
     }
 
     private void publisherInfo(final ImageView image_profile, final TextView username, final TextView publisher, String userId){
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users").child(userId);
 
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                User user = dataSnapshot.getValue(User.class);
-                Glide.with(mContext).load(user.getImageurl()).into(image_profile);
-                username.setText(user.getUsername());
-                publisher.setText(user.getUsername());
-            }
+        Server.Database.publisherInfo(image_profile,username,publisher,userId, mContext);
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
     }
     private void isSaved(final String postid, final ImageView imageView){
-        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("Saves")
-                .child(Server.Auth.getUid());
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.child(postid).exists()){
-                    imageView.setImageResource(R.drawable.ic_save_black);
-                    imageView.setTag("saved");
-                }else {
-                    imageView.setImageResource(R.drawable.ic_savee_black);
-                    imageView.setTag("save");
-                }
-            }
+        Server.Database.isSaved(postid,imageView,Server.Auth.getUid());
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
     }
 
     private void editPost(final String postid){
@@ -439,39 +281,23 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
         getText(postid, editText);
 
         alertDialog.setPositiveButton("Edit",
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        HashMap<String,Object> hashMap = new HashMap<>();
-                        hashMap.put("description",editText.getText().toString());
+                (dialog, which) -> {
+                    HashMap<String,Object> hashMap = new HashMap<>();
+                    hashMap.put("description",editText.getText().toString());
 
-                        FirebaseDatabase.getInstance().getReference("Posts")
-                                .child(postid).updateChildren(hashMap);
-                    }
+                    Server.Database.editPost(postid,hashMap);
                 });
         alertDialog.setNegativeButton("Cancel",
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int which) {
-                        dialogInterface.dismiss();
-                    }
-                });
+                (dialogInterface, which) -> dialogInterface.dismiss());
         alertDialog.show();
     }
 
     private void getText(String postid, final EditText editText){
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Posts")
-                .child(postid);
-        reference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                editText.setText(dataSnapshot.getValue(Post.class).getDescription());
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+        Server.Database.getTextDescription(postid, string -> {
+            editText.setText(string);
 
-            }
-        });
+        },e -> {});
+
     }
 }

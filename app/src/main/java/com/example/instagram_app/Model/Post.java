@@ -2,6 +2,7 @@ package com.example.instagram_app.Model;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import java.io.Serializable;
@@ -19,6 +20,7 @@ public class Post implements Serializable {
     private String gpsLatitude;
     private String gpsLongitude;
 
+    @Ignore
     public Post(@NonNull String postid,@NonNull String postimage, @NonNull String description,@NonNull String publisher,@NonNull String gpsLatitude,@NonNull String gpsLongitude) {
         this.postid = postid;
         this.postimage = postimage;

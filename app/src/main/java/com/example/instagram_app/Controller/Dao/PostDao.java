@@ -1,8 +1,5 @@
 package com.example.instagram_app.Controller.Dao;
 
-import android.os.AsyncTask;
-
-import androidx.core.util.Consumer;
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Delete;

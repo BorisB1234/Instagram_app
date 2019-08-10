@@ -50,9 +50,5 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/bar"
         android:id="@+id/recycler_view">
-
     </androidx.recyclerview.widget.RecyclerView>
-
-
-
 </RelativeLayout>

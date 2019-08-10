@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".EditProfileActivity">
+    tools:context=".Actiivity.EditProfileActivity">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
@@ -19,11 +19,9 @@
             android:id="@+id/toolbar"
             android:background="?android:attr/windowBackground">
 
-
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-
 
                 <ImageView
                     android:layout_width="wrap_content"
@@ -104,7 +102,5 @@
             android:hint="Bio"
             app:met_floatingLabel="normal"/>
 
-
     </LinearLayout>
-
 </LinearLayout>
