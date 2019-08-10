@@ -8,6 +8,8 @@ import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
 
+import com.example.instagram_app.Model.Comment;
+
 import java.util.List;
 
 @Dao
