@@ -1,4 +1,4 @@
-package com.example.instagram_app.Model;
+package com.example.instagram_app.Controller.Dao;
 
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;

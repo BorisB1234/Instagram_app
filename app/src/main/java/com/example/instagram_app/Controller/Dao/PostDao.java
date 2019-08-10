@@ -1,4 +1,4 @@
-package com.example.instagram_app.Model;
+package com.example.instagram_app.Controller.Dao;
 
 import android.os.AsyncTask;
 
@@ -10,6 +10,8 @@ import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
+
+import com.example.instagram_app.Model.Post;
 
 import java.util.List;
 
