@@ -18,6 +18,7 @@ import com.example.instagram_app.Model.User;
 import com.example.instagram_app.R;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -316,12 +317,12 @@ public class Server {
             PostsRef.child(postid).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    dataSnapshot.getValue(Post.class).getDescription();
+                    onComplete.accept(dataSnapshot.getValue(Post.class).getDescription());
                 }
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                    onFailed.accept(Optional.of(databaseError.toException()));
                 }
             });
 
@@ -523,10 +524,13 @@ public class Server {
 
         }
 
-        public static void updateUser(String uid, HashMap<String, Object> map,final Consumer<Void> onComplete,
+        public static void updateUser(final User user,final Consumer<Void> onComplete,
                                       final Consumer<Optional<Exception>> onFailed) {
-            UserRef.child(uid).updateChildren(map);
-            onComplete.accept(null);
+            UserRef.child(user.getId()).updateChildren(user.toMap()).addOnCompleteListener(task -> {
+                if (!task.isSuccessful()) onFailed.accept(Optional.ofNullable(task.getException()));
+                else onComplete.accept(null);
+            }).addOnFailureListener(e -> onFailed.accept(Optional.of(e)));
+
         }
 
         public static void publishPost(String myUrl, String description, String uid, String gpsLatitude, String gpsLongitude) {
@@ -606,9 +610,7 @@ public class Server {
 
                 uploadTask = fileReference.putFile(mImageUri);
                 uploadTask.continueWithTask((Continuation) task -> {
-                    if (!task.isSuccessful()) {
-                        throw task.getException();
-                    }
+                    if (!task.isSuccessful()) throw task.getException();
                     return fileReference.getDownloadUrl();
                 }).addOnCompleteListener((OnCompleteListener<Uri>) task -> {
                     if (task.isSuccessful()) {
@@ -617,13 +619,14 @@ public class Server {
 
                         onComplete.accept(miUrlOk);
                     } else {
-                        onComplete.accept("Failed");
+                        onFailed.accept(Optional.of(new Exception("Failed")));
+//                        onComplete.accept("Failed");
                     }
-                }).addOnFailureListener(e -> onFailed.accept(Optional.ofNullable(
-                        e)));
+                }).addOnFailureListener(e -> onFailed.accept(Optional.of(e)));
 
             } else {
-                onComplete.accept("No image selected");
+                onFailed.accept(Optional.of(new Exception("No image selected")));
+//                onComplete.accept("No image selected");
             }
 
         }

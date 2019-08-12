@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.example.instagram_app.Controller.Server;
+import com.example.instagram_app.Model.User;
 import com.example.instagram_app.R;
 import com.rengwuxian.materialedittext.MaterialEditText;
 import com.theartofdev.edmodo.cropper.CropImage;
@@ -27,6 +28,9 @@ public class EditProfileActivity extends AppCompatActivity {
 
     private Uri mImageUri;
 
+
+    private User user;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,12 +44,14 @@ public class EditProfileActivity extends AppCompatActivity {
         username = findViewById(R.id.username);
         bio = findViewById(R.id.bio);
 
-        Server.Database.getUser(Server.Auth.getUid(),user -> {
+        Server.Database.getUser(Server.Auth.getUid(), user -> {
             fullname.setText(user.getFullname());
             username.setText(user.getUsername());
             bio.setText(user.getBio());
             Glide.with(getApplicationContext()).load(user.getImageurl()).into(image_profile);
-        },e -> {});
+            this.user = user;
+        }, e -> {
+        });
 
         close.setOnClickListener(view -> finish());
 
@@ -61,38 +67,52 @@ public class EditProfileActivity extends AppCompatActivity {
         image_profile.setOnClickListener(onClickListener);
     }
 
-    private void updateProfile(String fullname, String username, String bio){
-        HashMap<String, Object> map = new HashMap<>();
-        map.put("fullname", fullname);
-        map.put("username", username);
-        map.put("bio", bio);
+    private void updateProfile(String fullname, String username, String bio) {
 
-        Server.Database.updateUser(Server.Auth.getUid(),map,aVoid -> {
+        final User utmp = user.clone();
+//        HashMap<String, Object> map = new HashMap<>();
+//        map.put("fullname", fullname);
+//        map.put("username", username);
+//        map.put("bio", bio);
+
+        utmp.setFullname(fullname);
+        utmp.setUsername(username);
+        utmp.setBio(bio);
+
+        Server.Database.updateUser(utmp, aVoid -> {
             Toast.makeText(EditProfileActivity.this, "Successfully updated!", Toast.LENGTH_SHORT).show();
+            user = utmp;
             finish();
-        }, e -> {});
+        }, e -> {
+        });
     }
 
-    private void uploadImage(){
+    private void uploadImage() {
         final ProgressDialog pd = new ProgressDialog(this);
         pd.setMessage("Uploading");
         pd.show();
 
-        Server.Storage.uploadImage(mImageUri, getContentResolver(),false,s -> {
-            if(s.equals("Failed")||s.equals("No image selected"))
-            {
-                Toast.makeText(EditProfileActivity.this, s, Toast.LENGTH_SHORT).show();
-            }else {
+        Server.Storage.uploadImage(mImageUri, getContentResolver(), false, imageUrl -> {
+//            if(s.equals("Failed")||s.equals("No image selected"))
+//            {
+//                Toast.makeText(EditProfileActivity.this, s, Toast.LENGTH_SHORT).show();
+//            }else {
 
-                HashMap<String, Object> map1 = new HashMap<>();
-                map1.put("imageurl", ""+s);
+            final User utmp = user.clone();
+            utmp.setImageurl(imageUrl);
 
-                Server.Database.updateUser(Server.Auth.getUid(),map1,aVoid -> {},e -> {});
+//            HashMap<String, Object> map1 = new HashMap<>();
+//            map1.put("imageurl", ""+imageUrl);
 
-                pd.dismiss();
+            Server.Database.updateUser(utmp, aVoid -> this.user = utmp, e -> {
+            }); //TODO async pd.dismiss()
 
-            }
-        },e -> {});
+            pd.dismiss();
+
+//            }
+        }, e -> {
+            e.ifPresent(e1 -> Toast.makeText(EditProfileActivity.this, e1.getMessage(), Toast.LENGTH_SHORT).show());
+        });
     }
 
     @Override

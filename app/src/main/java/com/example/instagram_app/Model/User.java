@@ -4,7 +4,11 @@ import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+import com.google.firebase.database.Exclude;
+
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 @Entity
 public class User implements Serializable {
@@ -28,6 +32,14 @@ public class User implements Serializable {
 
     public User(){
 
+    }
+
+    private User(User user){
+        this.id = user.id;
+        this.username = user.username;
+        this.fullname = user.fullname;
+        this.imageurl = user.imageurl;
+        this.bio = user.bio;
     }
 
     public String getId() {
@@ -92,5 +104,23 @@ public class User implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    @Override
+    public User clone() {
+        return new User(this);
+    }
+
+
+    @Exclude
+    public Map<String, Object> toMap() {
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("id", id);
+        result.put("username", username);
+        result.put("fullname", fullname);
+        result.put("imageurl", imageurl);
+        result.put("bio", bio);
+
+        return result;
     }
 }

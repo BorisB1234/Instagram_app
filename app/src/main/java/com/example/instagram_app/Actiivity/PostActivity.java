@@ -72,19 +72,19 @@ public class PostActivity extends AppCompatActivity {
         progressDialog.setMessage("Posting");
         progressDialog.show();
 
-        Server.Storage.uploadImage(imageUri,getContentResolver(),true,s -> {
-            if(s.equals("Failed")||s.equals("No image selected"))
-            {
-                Toast.makeText(PostActivity.this, s, Toast.LENGTH_SHORT).show();
-            }else {
-                myUrl = s;
+        Server.Storage.uploadImage(imageUri,getContentResolver(),true,myUrl -> {
+//            if(s.equals("Failed")||s.equals("No image selected"))
+//            {
+//                Toast.makeText(PostActivity.this, s, Toast.LENGTH_SHORT).show();
+//            }else {
+//                myUrl = s;
                 Server.Database.publishPost(myUrl, description.getText().toString(), Server.Auth.getUid(), gpsLatitude, gpsLongitude);
                 progressDialog.dismiss();
 
                 startActivity(new Intent(PostActivity.this, MainActivity.class));
                 finish();
-            }
-        },e -> {});
+//            }
+        },e -> e.ifPresent(e1 -> Toast.makeText(PostActivity.this, e1.getMessage(), Toast.LENGTH_SHORT).show()));
     }
 
     private void getGpsLocation() {
