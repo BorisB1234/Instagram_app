@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModel;
 
 import com.example.instagram_app.Model.Post;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -17,16 +16,16 @@ public class Model extends ViewModel {
 
     final private static Model instance = new Model();
 
-
     public static Model getInstance() {
         return instance;
     }
     private Model() { }
 
-    private PostListData postListData=new PostListData();
+    //private PostListData postListData=new PostListData();
 
     public LiveData<List<Post>> getPosts() {
-        return postListData;
+        //return postListData;
+        return new PostListData();
     }
 
     class PostListData extends MutableLiveData<List<Post>> {
@@ -42,6 +41,7 @@ public class Model extends ViewModel {
                 Log.d("gil server", Arrays.toString(array));
 
                 for (Post post : posts) {
+                    Log.d("TAG11",post.getDescription());
                     Local.Database.addPosts(aVoid -> {Log.d("gil Local", "post insert db "+ post.getPostid());},post);
                 }
 

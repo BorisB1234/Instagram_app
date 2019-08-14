@@ -1,6 +1,7 @@
 package com.example.instagram_app.Fragment;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -68,11 +69,17 @@ public class HomeFragment extends Fragment {
     }
 
     private void readPosts(){
+        Log.d("TAG10","readPosts");
 
         Model.getInstance().getPosts().observe(this, posts -> {
+            Log.d("TAG10","observe");
+            Log.d("TAG10",posts.toString());
+
             postLists.clear();
             for(Post post:posts)
             {
+                Log.d("TAG10",post.toString());
+
                 if(post.getPublisher().equals(Server.Auth.getUid())){
                     postLists.add(post);
                 }
@@ -85,5 +92,25 @@ public class HomeFragment extends Fragment {
                 progressBar.setVisibility(View.GONE);
             }
         });
+
+
+
+//        Server.Database.getAllPostsFromAllUsers(posts -> {
+//            postLists.clear();
+//            for(Post post:posts)
+//            {
+//                if(post.getPublisher().equals(Server.Auth.getUid())){
+//                    postLists.add(post);
+//                }
+//                for(String id:followingList){
+//                    if(post.getPublisher().equals(id)){
+//                        postLists.add(post);
+//                    }
+//                }
+//                postAdapter.notifyDataSetChanged();
+//                progressBar.setVisibility(View.GONE);
+//            }
+//        },e -> {});
+
     }
 }
