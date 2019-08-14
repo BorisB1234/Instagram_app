@@ -52,6 +52,12 @@ public class HomeFragment extends Fragment {
         return view;
     }
 
+//    @Override
+//    public void onStart() {
+//        super.onStart();
+//
+//    }
+
     private void checkFollowing(){
         followingList = new ArrayList<>();
         Server.Database.getFollow(Server.Auth.getUid(),false,strings -> {

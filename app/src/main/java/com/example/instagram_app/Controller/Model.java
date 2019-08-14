@@ -33,6 +33,8 @@ public class Model extends ViewModel {
         @Override
         protected void onActive() {
             super.onActive();
+            Log.d("TAG","onActive");
+
             Server.Database.getAllPostsFromAllUsers(posts -> {
                 Post[] array = posts.toArray(new Post[0]);
 
@@ -50,13 +52,14 @@ public class Model extends ViewModel {
 
                 if (value!=null)
                     setValue(value);
-                else setValue(new ArrayList<>());
+//                else setValue(new ArrayList<>());
             });
         }
         @Override
         protected void onInactive() {
             super.onInactive();
-            //TODO close session with firebase
+            Log.d("TAG","onInactive");
+
 //            modelFirebase.cancellGetAllPosts();
             Log.d("TAG","cancellGetAllPosts");
         }
