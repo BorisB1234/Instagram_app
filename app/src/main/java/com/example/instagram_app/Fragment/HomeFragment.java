@@ -7,10 +7,13 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.instagram_app.Adapter.PostAdapter;
+import com.example.instagram_app.Controller.Model;
 import com.example.instagram_app.Controller.Server;
 import com.example.instagram_app.Model.Post;
 import com.example.instagram_app.R;
@@ -60,7 +63,7 @@ public class HomeFragment extends Fragment {
 
     private void readPosts(){
 
-        Server.Database.getAllPostsFromAllUsers(posts -> {
+        Model.getInstance().getPosts().observe(this, posts -> {
             postLists.clear();
             for(Post post:posts)
             {
@@ -75,6 +78,6 @@ public class HomeFragment extends Fragment {
                 postAdapter.notifyDataSetChanged();
                 progressBar.setVisibility(View.GONE);
             }
-        },e -> {});
+        });
     }
 }

@@ -10,8 +10,8 @@ import java.util.Objects;
 
 @Entity
 public class Post implements Serializable {
-    @PrimaryKey
     @NonNull
+    @PrimaryKey
     private String postid;
 
     private String postimage;
