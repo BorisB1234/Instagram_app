@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
@@ -49,15 +50,13 @@ public class HomeFragment extends Fragment {
         progressBar = view.findViewById(R.id.progress_circular);
 
         checkFollowing();
+        if(!Server.Database.netIsConnect()) {
+            Toast.makeText(getContext(), "Offline network", Toast.LENGTH_SHORT).show();
+            readPosts();
+        }
 
         return view;
     }
-
-//    @Override
-//    public void onStart() {
-//        super.onStart();
-//
-//    }
 
     private void checkFollowing(){
         followingList = new ArrayList<>();
@@ -69,17 +68,11 @@ public class HomeFragment extends Fragment {
     }
 
     private void readPosts(){
-        Log.d("TAG10","readPosts");
-
         Model.getInstance().getPosts().observe(this, posts -> {
-            Log.d("TAG10","observe");
-            Log.d("TAG10",posts.toString());
 
             postLists.clear();
             for(Post post:posts)
             {
-                Log.d("TAG10",post.toString());
-
                 if(post.getPublisher().equals(Server.Auth.getUid())){
                     postLists.add(post);
                 }

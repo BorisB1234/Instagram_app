@@ -2,6 +2,7 @@ package com.example.instagram_app.Controller;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.webkit.MimeTypeMap;
 import android.widget.ImageView;
@@ -11,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.bumptech.glide.Glide;
+import com.example.MyApplication;
 import com.example.instagram_app.Model.Comment;
 import com.example.instagram_app.Model.Notification;
 import com.example.instagram_app.Model.Post;
@@ -141,6 +143,32 @@ public class Server {
                     for(DataSnapshot snapshot : dataSnapshot.getChildren()){
                         Comment comment = snapshot.getValue(Comment.class);
                         comments.add(comment);
+                    }
+                    onComplete.accept(comments);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    onFailed.accept(Optional.ofNullable(
+                            databaseError.toException()));
+                }
+            });
+        }
+
+        public static void getAllCommentsOfAllPosts(final Consumer<List<List<Comment>>> onComplete,
+                                          final Consumer<Optional<Exception>> onFailed){
+            CommentsRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    List<List<Comment>> comments=new ArrayList<>();
+                    for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+                        List<Comment> commentList = new ArrayList<>();
+
+                        for(DataSnapshot snapshot2 : snapshot.getChildren()) {
+                            Comment comment = snapshot2.getValue(Comment.class);
+                            commentList.add(comment);
+                        }
+                        comments.add(commentList);
                     }
                     onComplete.accept(comments);
                 }
@@ -543,6 +571,28 @@ public class Server {
             reference.child(postid).setValue(post);
 
         }
+
+        public static boolean netIsConnect(){
+            ConnectivityManager connectivityManager=
+                    (ConnectivityManager) MyApplication.getContext()
+                            .getSystemService(Context.CONNECTIVITY_SERVICE);
+            return  connectivityManager.getActiveNetworkInfo()!=null;
+        }
+
+//        public static void saveCacheData(){
+//            String filename = "myfile";
+//            String fileContents = "Hello world!";
+//            FileOutputStream outputStream;
+//
+//            try {
+//                outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+//                outputStream.write(fileContents.getBytes());
+//                outputStream.close();
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
+
 
     }
 

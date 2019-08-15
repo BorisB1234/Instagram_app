@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.example.instagram_app.Model.Comment;
 import com.example.instagram_app.Model.Post;
 
 import java.util.Arrays;
@@ -27,28 +28,64 @@ public class Model extends ViewModel {
         //return postListData;
         return new PostListData();
     }
+    public LiveData<List<Comment>> getComments() {
+        //return postListData;
+        return new CommentListData();
+    }
+    class CommentListData extends MutableLiveData<List<Comment>> {
+        @Override
+        protected void onActive() {
+            super.onActive();
+
+            Server.Database.getAllCommentsOfAllPosts(comments -> {
+                Comment[] array = comments.toArray(new Comment[0]);
+
+                //TODO check doubles in local db when insert the same agrs
+            for(List<Comment> comment : comments) {
+                for (Comment comment2: comment) {
+                    Local.Database.addComments(aVoid -> {
+                    }, comment2);
+                }
+            }
+
+            }, e -> {
+            });
+            Local.Database.getLiveAllComments(listLiveData -> {
+                List<Comment> value = listLiveData.getValue();
+
+                if (value != null)
+                    setValue(value);
+//                else setValue(new ArrayList<>());
+            });
+        }
+        @Override
+        protected void onInactive() {
+            super.onInactive();
+
+        }
+        public CommentListData() {
+            super();
+            setValue(new LinkedList<>());
+            Local.Database.getAllComments(comments -> setValue(comments));
+        }
+    }
 
     class PostListData extends MutableLiveData<List<Post>> {
         @Override
         protected void onActive() {
             super.onActive();
-            Log.d("TAG","onActive");
 
             Server.Database.getAllPostsFromAllUsers(posts -> {
                 Post[] array = posts.toArray(new Post[0]);
 
                 //TODO check doubles in local db when insert the same agrs
-                Log.d("gil server", Arrays.toString(array));
-
                 for (Post post : posts) {
-                    Log.d("TAG11",post.getDescription());
-                    Local.Database.addPosts(aVoid -> {Log.d("gil Local", "post insert db "+ post.getPostid());},post);
+                    Local.Database.addPosts(aVoid -> {},post);
                 }
 
             }, e -> {});
             Local.Database.getLiveAllPosts(listLiveData -> {
                 List<Post> value = listLiveData.getValue();
-                Log.d("gil local", value+"");
 
                 if (value!=null)
                     setValue(value);
@@ -58,10 +95,8 @@ public class Model extends ViewModel {
         @Override
         protected void onInactive() {
             super.onInactive();
-            Log.d("TAG","onInactive");
 
 //            modelFirebase.cancellGetAllPosts();
-            Log.d("TAG","cancellGetAllPosts");
         }
         public PostListData() {
             super();
