@@ -14,14 +14,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.instagram_app.Adapter.CommentAdapter;
-import com.example.instagram_app.Controller.Model;
 import com.example.instagram_app.Controller.Server;
 import com.example.instagram_app.Model.Comment;
 import com.example.instagram_app.Model.Notification;
-import com.example.instagram_app.Model.Post;
 import com.example.instagram_app.R;
-
-import java.util.List;
 
 public class CommentsActivity extends AppCompatActivity {
 
@@ -101,13 +97,11 @@ public class CommentsActivity extends AppCompatActivity {
     }
 
     private void readComments(){
-        //Server.Database.getAllComments(postid, comments -> commentAdapter.setmComment(comments), e -> {});
+        Server.Database.getAllComments(postid, comments -> commentAdapter.setmComment(comments), e -> {});
 
-        Model.getInstance().getComments().observe(this, comments -> {
-            commentAdapter.setmComment(comments);
-
-        });
-
+//        ViewModel.getInstance().getComments().observe(this, comments -> {
+//            commentAdapter.setmComment(comments);
+//
+//        });
         }
-
 }

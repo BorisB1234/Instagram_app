@@ -484,6 +484,28 @@ public class Server {
             });
         }
 
+        public static void checkPostsNum(
+                final Consumer<Integer> onComplete,
+                final Consumer<Optional<Exception>> onFailed){
+            PostsRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    List<Post> posts=new ArrayList<>();
+                    for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+                        Post post = snapshot.getValue(Post.class);
+                        posts.add(post);
+                    }
+                    onComplete.accept(posts.size());
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    onFailed.accept(Optional.ofNullable(
+                            databaseError.toException()));
+                }
+            });
+        }
+
         public static void getAllSaves(String uid, final Consumer<List<String>> onComplete,
                                        final Consumer<Optional<Exception>> onFailed) {
 
@@ -578,22 +600,6 @@ public class Server {
                             .getSystemService(Context.CONNECTIVITY_SERVICE);
             return  connectivityManager.getActiveNetworkInfo()!=null;
         }
-
-//        public static void saveCacheData(){
-//            String filename = "myfile";
-//            String fileContents = "Hello world!";
-//            FileOutputStream outputStream;
-//
-//            try {
-//                outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
-//                outputStream.write(fileContents.getBytes());
-//                outputStream.close();
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }
-
-
     }
 
     public static class Auth{

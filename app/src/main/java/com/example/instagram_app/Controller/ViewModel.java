@@ -1,37 +1,30 @@
 package com.example.instagram_app.Controller;
 
-import android.util.Log;
-
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
 
 import com.example.instagram_app.Model.Comment;
 import com.example.instagram_app.Model.Post;
 
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-public class Model extends ViewModel {
+public class ViewModel extends androidx.lifecycle.ViewModel {
 
-    final private static Model instance = new Model();
+    final private static ViewModel instance = new ViewModel();
 
-    public static Model getInstance() {
+    public static ViewModel getInstance() {
         return instance;
     }
-    private Model() { }
-
-    //private PostListData postListData=new PostListData();
+    private ViewModel() { }
 
     public LiveData<List<Post>> getPosts() {
-        //return postListData;
         return new PostListData();
     }
     public LiveData<List<Comment>> getComments() {
-        //return postListData;
         return new CommentListData();
     }
+
     class CommentListData extends MutableLiveData<List<Comment>> {
         @Override
         protected void onActive() {
@@ -55,7 +48,6 @@ public class Model extends ViewModel {
 
                 if (value != null)
                     setValue(value);
-//                else setValue(new ArrayList<>());
             });
         }
         @Override
@@ -89,14 +81,11 @@ public class Model extends ViewModel {
 
                 if (value!=null)
                     setValue(value);
-//                else setValue(new ArrayList<>());
             });
         }
         @Override
         protected void onInactive() {
             super.onInactive();
-
-//            modelFirebase.cancellGetAllPosts();
         }
         public PostListData() {
             super();
@@ -104,5 +93,4 @@ public class Model extends ViewModel {
             Local.Database.getAllPosts(posts -> setValue(posts));
         }
     }
-    
 }

@@ -1,7 +1,6 @@
 package com.example.instagram_app.Fragment;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,13 +8,11 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.instagram_app.Adapter.PostAdapter;
-import com.example.instagram_app.Controller.Model;
+import com.example.instagram_app.Controller.ViewModel;
 import com.example.instagram_app.Controller.Server;
 import com.example.instagram_app.Model.Post;
 import com.example.instagram_app.R;
@@ -54,6 +51,7 @@ public class HomeFragment extends Fragment {
             Toast.makeText(getContext(), "Offline network", Toast.LENGTH_SHORT).show();
             readPosts();
         }
+        checkUpdate();
 
         return view;
     }
@@ -68,7 +66,8 @@ public class HomeFragment extends Fragment {
     }
 
     private void readPosts(){
-        Model.getInstance().getPosts().observe(this, posts -> {
+
+        ViewModel.getInstance().getPosts().observe(this, posts -> {
 
             postLists.clear();
             for(Post post:posts)
@@ -85,8 +84,6 @@ public class HomeFragment extends Fragment {
                 progressBar.setVisibility(View.GONE);
             }
         });
-
-
 
 //        Server.Database.getAllPostsFromAllUsers(posts -> {
 //            postLists.clear();
@@ -105,5 +102,13 @@ public class HomeFragment extends Fragment {
 //            }
 //        },e -> {});
 
+    }
+
+    private void checkUpdate(){
+        Server.Database.checkPostsNum(integer -> {
+            if (integer!=postLists.size()){
+                readPosts();
+            }
+        },e -> {});
     }
 }

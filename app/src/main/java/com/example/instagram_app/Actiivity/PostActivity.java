@@ -26,8 +26,6 @@ import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 public class PostActivity extends AppCompatActivity {
 
     Uri imageUri;
-    String myUrl="";
-
     ImageView close, image_added;
     TextView post;
     EditText description;
@@ -73,17 +71,12 @@ public class PostActivity extends AppCompatActivity {
         progressDialog.show();
 
         Server.Storage.uploadImage(imageUri,getContentResolver(),true,myUrl -> {
-//            if(s.equals("Failed")||s.equals("No image selected"))
-//            {
-//                Toast.makeText(PostActivity.this, s, Toast.LENGTH_SHORT).show();
-//            }else {
-//                myUrl = s;
+
                 Server.Database.publishPost(myUrl, description.getText().toString(), Server.Auth.getUid(), gpsLatitude, gpsLongitude);
                 progressDialog.dismiss();
 
                 startActivity(new Intent(PostActivity.this, MainActivity.class));
                 finish();
-//            }
         },e -> e.ifPresent(e1 -> Toast.makeText(PostActivity.this, e1.getMessage(), Toast.LENGTH_SHORT).show()));
     }
 

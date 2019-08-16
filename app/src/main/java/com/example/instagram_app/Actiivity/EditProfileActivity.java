@@ -18,8 +18,6 @@ import com.example.instagram_app.R;
 import com.rengwuxian.materialedittext.MaterialEditText;
 import com.theartofdev.edmodo.cropper.CropImage;
 
-import java.util.HashMap;
-
 public class EditProfileActivity extends AppCompatActivity {
 
     ImageView close, image_profile;
@@ -70,11 +68,6 @@ public class EditProfileActivity extends AppCompatActivity {
     private void updateProfile(String fullname, String username, String bio) {
 
         final User utmp = user.clone();
-//        HashMap<String, Object> map = new HashMap<>();
-//        map.put("fullname", fullname);
-//        map.put("username", username);
-//        map.put("bio", bio);
-
         utmp.setFullname(fullname);
         utmp.setUsername(username);
         utmp.setBio(bio);
@@ -93,26 +86,15 @@ public class EditProfileActivity extends AppCompatActivity {
         pd.show();
 
         Server.Storage.uploadImage(mImageUri, getContentResolver(), false, imageUrl -> {
-//            if(s.equals("Failed")||s.equals("No image selected"))
-//            {
-//                Toast.makeText(EditProfileActivity.this, s, Toast.LENGTH_SHORT).show();
-//            }else {
 
             final User utmp = user.clone();
             utmp.setImageurl(imageUrl);
-
-//            HashMap<String, Object> map1 = new HashMap<>();
-//            map1.put("imageurl", ""+imageUrl);
-
             Server.Database.updateUser(utmp, aVoid -> this.user = utmp, e -> {
             }); //TODO async pd.dismiss()
 
             pd.dismiss();
 
-//            }
-        }, e -> {
-            e.ifPresent(e1 -> Toast.makeText(EditProfileActivity.this, e1.getMessage(), Toast.LENGTH_SHORT).show());
-        });
+        }, e -> e.ifPresent(e1 -> Toast.makeText(EditProfileActivity.this, e1.getMessage(), Toast.LENGTH_SHORT).show()));
     }
 
     @Override
