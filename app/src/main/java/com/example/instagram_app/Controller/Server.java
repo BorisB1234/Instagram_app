@@ -38,7 +38,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 public class Server {
-    private Server(){};
+    private Server(){}
 
     public static class Database{
         private static DatabaseReference databaseRef =

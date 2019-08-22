@@ -1,7 +1,6 @@
 package com.example.instagram_app.Controller;
 
 import android.os.AsyncTask;
-import android.util.Log;
 
 import androidx.core.util.Consumer;
 import androidx.lifecycle.LiveData;
